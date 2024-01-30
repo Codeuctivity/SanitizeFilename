@@ -7,7 +7,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SanitizeFilename", "Sanitiz
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SanitizeFilenameTests", "SanitizeFilenameTests\SanitizeFilenameTests.csproj", "{F5D86002-C0E4-4603-AFED-473766079496}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SanitizeDemo", "SanitizeDemo\SanitizeDemo.csproj", "{FEAB0C23-FB9A-413F-ADF0-4F601E934EAB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SanitizeDemo", "SanitizeDemo\SanitizeDemo.csproj", "{FEAB0C23-FB9A-413F-ADF0-4F601E934EAB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F4F691FC-F54A-483B-B482-5BE06DF9DD2B}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
