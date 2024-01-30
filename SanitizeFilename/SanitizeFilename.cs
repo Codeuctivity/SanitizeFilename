@@ -57,6 +57,8 @@ namespace Codeuctivity
             (char)31,
         ];
 
+        public static readonly string[] InvalidTrailingChars = [".", " "];
+
         public static readonly char[] InvalidCharsInUnixFileNames = ['/', '\0'];
 
         public static string Sanitize(string filename, char replacement = '_')
@@ -80,11 +82,12 @@ namespace Codeuctivity
             var invalidCharsFileNamesSanitized = InternalSanitizeChars(filename, replacement, InvalidCharsInWindowsFileNames);
             var reservedFileNamesSanitized = InternalSanitizeReservedFileNames(invalidCharsFileNamesSanitized, $"{replacement}");
             var reservedFileNamePrefixSanitized = InternalSanitizeReservedFileNamePrefix(reservedFileNamesSanitized, $"{replacement}");
+            var trailingCharSanitized = RemoveTrailingPeriodOrSpace(reservedFileNamePrefixSanitized, $"{replacement}");
 
-            if (reservedFileNamePrefixSanitized == filename)
-                return reservedFileNamePrefixSanitized;
+            if (trailingCharSanitized == filename)
+                return trailingCharSanitized;
 
-            return InternalSanitize(reservedFileNamePrefixSanitized, replacement);
+            return InternalSanitize(trailingCharSanitized, replacement);
         }
 
         private static string InternalSanitizeChars(string filename, char replacement, char[]? invalidChars = null)
@@ -107,6 +110,15 @@ namespace Codeuctivity
             foreach (var reservedFileNamePrefix in ReservedWindowsFileNamesWithExtension)
                 if (filename.StartsWith(reservedFileNamePrefix, true, CultureInfo.InvariantCulture))
                     filename = string.Concat(replacement, filename.AsSpan(0, reservedFileNamePrefix.Length));
+
+            return filename;
+        }
+
+        private static string RemoveTrailingPeriodOrSpace(string filename, string replacement)
+        {
+            foreach (var InvalidTrailingChar in InvalidTrailingChars)
+                if (filename.EndsWith(InvalidTrailingChar, true, CultureInfo.InvariantCulture))
+                    return filename[..^1] + replacement;
 
             return filename;
         }
