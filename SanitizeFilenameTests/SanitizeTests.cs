@@ -26,6 +26,35 @@ namespace SanitizeFilenameTests
 
         private static readonly string[] ReservedWindowsFileNamePrefixUsed = ["con.txt", "CON.txt", "PRN.txt", "AUX.txt", "NUL.txt", "COM0.txt", "COM1.txt", "COM2.txt", "COM3.txt", "COM4.txt", "COM5.txt", "COM6.txt", "COM7.txt", "COM8.txt", "COM9.txt", "COM\u00B9.txt", "COM\u00B2.txt", "COM\u00B3.txt", "LPT0.txt", "LPT1.txt", "LPT2.txt", "LPT3.txt", "LPT4.txt", "LPT5.txt", "LPT6.txt", "LPT7.txt", "LPT8.txt", "LPT9.txt", "LPT\u00B9.txt", "LPT\u00B2.txt", "LPT\u00B3.txt"];
 
+        private static readonly string[] ValidFileNames = ["validFileName"];
+
+        [Test]
+        [TestCaseSource(nameof(ValidFileNames))]
+        public void ShouldNotTouchASaneFilename(string validFilename)
+        {
+            var sanitizedFilename = validFilename.Sanitize();
+
+            Assert.That(sanitizedFilename, Is.EqualTo(validFilename));
+        }
+
+        [Test]
+        [TestCase("CO*", 'N', "N")]
+        public void ShouldSanitizeEdgeCase(string invalidFilename, char replacement, string expectedOutcome)
+        {
+            var sanitizedFilename = invalidFilename.Sanitize(replacement);
+
+            Assert.That(sanitizedFilename, Is.EqualTo(expectedOutcome));
+        }
+
+        [Test]
+        [TestCase("CO*", '*', "N")]
+        public void ShouldThrow(string invalidFilename, char replacement, string expectedOutcome)
+        {
+            var ex = Assert.Throws<ArgumentException>(() => invalidFilename.Sanitize(replacement));
+
+            Assert.That(ex.Message, Is.EqualTo("Replacement char '*' is invalid for Windows file names (Parameter 'replacement')"));
+        }
+
         [Test]
         public void ShouldSanitizeInvalidWindowsFileNamesWithControlCharacters()
         {
