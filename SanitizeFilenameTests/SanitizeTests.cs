@@ -56,6 +56,16 @@ namespace SanitizeFilenameTests
         }
 
         [Test]
+        [TestCase("COM1", '.')]
+        [TestCase("COM1", ' ')]
+        public void ShouldFallbackToHardCodedDefault(string invalidFilename, char replacement)
+        {
+            var sanitizedFilename = invalidFilename.SanitizeFilename(replacement);
+
+            Assert.That(sanitizedFilename, Is.EqualTo(SanitizeFilename.FallbackFileName));
+        }
+
+        [Test]
         public void ShouldSanitizeInvalidWindowsFileNamesWithControlCharacters()
         {
             // add Characters whose integer representations are in the range from 1 through 31, except for alternate data streams where these characters are allowed. For more information about file streams, see File Streams
@@ -102,8 +112,11 @@ namespace SanitizeFilenameTests
 
         [Test]
         [TestCase("a", 300, "a", 255)]
-        [TestCase("👩🏽‍🚒", 248, "👩🏽‍🚒", 255)]
-        [TestCase("👩🏽‍🚒", 249, "a", 249)]
+        // Not compatible to ext4 but works on NTFS
+        //[TestCase("👩🏽‍🚒", 248, "👩🏽‍🚒", 255)]
+        // Fitting to ext4 using UTF-8 filenames
+        [TestCase("👩🏽‍🚒", 240, "👩🏽‍🚒", 247)]
+        [TestCase("👩🏽‍🚒", 241, "a", 241)]
         public void ShouldTruncateLongFileNamesPreserveUnicodeTextElements(string testSuffix, int countOfFillingAChars, string expectedEnd, int expectedSanitizedLength)
         {
             var invalidFilename = new string('a', countOfFillingAChars) + testSuffix;
@@ -111,6 +124,7 @@ namespace SanitizeFilenameTests
             Assert.That(sanitizedFilename, Does.EndWith(expectedEnd));
             Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
             Assert.That(sanitizedFilename, Has.Length.EqualTo(expectedSanitizedLength));
+            Assert.That(System.Text.Encoding.UTF8.GetByteCount(sanitizedFilename), Is.LessThan(256));
         }
 
         private bool TryWriteFileToTempDirectory(string sanitizedFilename)
