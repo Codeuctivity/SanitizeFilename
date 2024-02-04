@@ -11,11 +11,25 @@
         /// <param name="filename"></param>
         /// <param name="replacement"></param>
         /// <returns></returns>
+        [Obsolete("Method got renamed to SanitizeFilename")]
         public static string Sanitize(this string filename, char replacement = '_')
         {
-            var invalidCharsSanitized = SanitizeFilename.Sanitize(filename, replacement);
+            var sanitizedFilename = Codeuctivity.SanitizeFilename.Sanitize(filename, replacement);
 
-            return invalidCharsSanitized;
+            return sanitizedFilename;
+        }
+
+        /// <summary>
+        /// Sanitizes a filename by replacing invalid chars with a replacement char. Follows rules defined in https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <param name="replacement"></param>
+        /// <returns></returns>
+        public static string SanitizeFilename(this string filename, char replacement = '_')
+        {
+            var sanitizedFilename = Codeuctivity.SanitizeFilename.Sanitize(filename, replacement);
+
+            return sanitizedFilename;
         }
     }
 }

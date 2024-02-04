@@ -12,14 +12,13 @@ Implements rules documented by [Microsoft](https://docs.microsoft.com/en-us/wind
 using Codeuctivity;
 
 string unsafeString = "file*Name";
-string safeFileName = unsafeString.Sanitize();
+string safeFileName = unsafeString.SanitizeFilename();
 Console.WriteLine($"Unsafe: {unsafeString}");
-Console.WriteLine($"Sanitized: {safeFileName}");
-
-string safeFileNameOptionalReplacementChar = unsafeString.Sanitize(' ');
-Console.WriteLine($"Sanitized: {safeFileNameOptionalReplacementChar}");
-
 //Unsafe: file*Name
+Console.WriteLine($"Sanitized: {safeFileName}");
 //Sanitized: file_Name
-//Sanitized: file Name
+
+string safeFileNameOptionalReplacementChar = unsafeString.SanitizeFilename(' ');
+Console.WriteLine($"SafeFileNameOptionalReplacementChar: {safeFileNameOptionalReplacementChar}");
+//SafeFileNameOptionalReplacementChar: file Name
 ```

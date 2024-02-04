@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Text;
 
 namespace Codeuctivity
 {
@@ -84,7 +85,8 @@ namespace Codeuctivity
         {
             ReplacementSanityCheck(replacement);
 
-            return InternalSanitize(filename, replacement);
+            string saneFilename = InternalSanitize(filename, replacement);
+            return UnicodeSafeStringTruncate(saneFilename);
         }
 
         private static void ReplacementSanityCheck(char replacement)
@@ -141,5 +143,34 @@ namespace Codeuctivity
 
             return filename;
         }
+
+        static string UnicodeSafeStringTruncate(string longFileName)
+        {
+            if (longFileName.Length <= 255)
+            {
+                return longFileName;
+            }
+
+            var builder = new StringBuilder();
+            var builderForward = new StringBuilder();
+
+            var textElementEnumerator = StringInfo.GetTextElementEnumerator(longFileName);
+
+            int textElementCount = 1;
+            while (textElementEnumerator.MoveNext())
+            {
+                builderForward.Append(textElementEnumerator.Current);
+                if (builderForward.ToString().Length > 255)
+                {
+                    return builder.ToString();
+                }
+
+                builder.Append(textElementEnumerator.Current);
+                textElementCount++;
+            }
+
+            return longFileName;
+        }
     }
 }
+
