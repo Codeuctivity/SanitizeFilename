@@ -28,7 +28,7 @@ updates:
     schedule:
       interval: "daily"
     ignore:
-      - dependency-name: "nunit"
+      - dependency-name: "NUnit"
       - dependency-name: "coverlet.collector"
       - dependency-name: "SonarAnalyzer.CSharp"
       - dependency-name: "AngleSharp"
@@ -40,3 +40,4 @@ updates:
       - dependency-name: "MSTest.TestAdapter"
       - dependency-name: "MSTest.TestFramework"
       - dependency-name: "NUnit3TestAdapter"
+      - dependency-name: "NUnit.Analyzers"

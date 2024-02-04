@@ -12,6 +12,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F4F691FC-F54A-483B-B482-5BE06DF9DD2B}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		.github\dependabot.yml = .github\dependabot.yml
 		README.md = README.md
 	EndProjectSection
 EndProject

@@ -1,4 +1,4 @@
-using Codeuctivity;
+﻿using Codeuctivity;
 
 namespace SanitizeFilenameTests
 {
@@ -32,7 +32,7 @@ namespace SanitizeFilenameTests
         [TestCaseSource(nameof(ValidFileNames))]
         public void ShouldNotTouchASaneFilename(string validFilename)
         {
-            var sanitizedFilename = validFilename.Sanitize();
+            var sanitizedFilename = validFilename.SanitizeFilename();
 
             Assert.That(sanitizedFilename, Is.EqualTo(validFilename));
         }
@@ -41,18 +41,28 @@ namespace SanitizeFilenameTests
         [TestCase("CO*", 'N', "N")]
         public void ShouldSanitizeEdgeCase(string invalidFilename, char replacement, string expectedOutcome)
         {
-            var sanitizedFilename = invalidFilename.Sanitize(replacement);
+            var sanitizedFilename = invalidFilename.SanitizeFilename(replacement);
 
             Assert.That(sanitizedFilename, Is.EqualTo(expectedOutcome));
         }
 
         [Test]
-        [TestCase("CO*", '*', "N")]
-        public void ShouldThrow(string invalidFilename, char replacement, string expectedOutcome)
+        [TestCase("CO*", '*')]
+        public void ShouldThrow(string invalidFilename, char replacement)
         {
-            var ex = Assert.Throws<ArgumentException>(() => invalidFilename.Sanitize(replacement));
+            var ex = Assert.Throws<ArgumentException>(() => invalidFilename.SanitizeFilename(replacement));
 
             Assert.That(ex.Message, Is.EqualTo("Replacement char '*' is invalid for Windows file names (Parameter 'replacement')"));
+        }
+
+        [Test]
+        [TestCase("COM1", '.')]
+        [TestCase("COM1", ' ')]
+        public void ShouldFallbackToHardCodedDefault(string invalidFilename, char replacement)
+        {
+            var sanitizedFilename = invalidFilename.SanitizeFilename(replacement);
+
+            Assert.That(sanitizedFilename, Is.EqualTo(SanitizeFilename.FallbackFileName));
         }
 
         [Test]
@@ -66,7 +76,7 @@ namespace SanitizeFilenameTests
 
                 var invalidFilename = "invalid" + new string(aReservedChar, 1) + "filename";
 
-                var sanitizedFilename = invalidFilename.Sanitize();
+                var sanitizedFilename = invalidFilename.SanitizeFilename();
 
                 Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
                 Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
@@ -77,7 +87,7 @@ namespace SanitizeFilenameTests
         [TestCaseSource(nameof(InvalidWindowsFileNames))]
         public void ShouldSanitizeInvalidWindowsFileNames(string invalidFilename)
         {
-            var sanitizedFilename = invalidFilename.Sanitize();
+            var sanitizedFilename = invalidFilename.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
             Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
         }
@@ -86,7 +96,7 @@ namespace SanitizeFilenameTests
         [TestCaseSource(nameof(ReservedWindowsFileNames))]
         public void ShouldSanitizeReservedWindowsFileNames(string invalidFilename)
         {
-            var sanitizedFilename = invalidFilename.Sanitize();
+            var sanitizedFilename = invalidFilename.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
             Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
         }
@@ -95,9 +105,26 @@ namespace SanitizeFilenameTests
         [TestCaseSource(nameof(ReservedWindowsFileNamePrefixUsed))]
         public void ShouldSanitizeReservedWindowsFileNamePrefix(string invalidFilename)
         {
-            var sanitizedFilename = invalidFilename.Sanitize();
+            var sanitizedFilename = invalidFilename.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
             Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+        }
+
+        [Test]
+        [TestCase("a", 300, "a", 255)]
+        // Not compatible to ext4 but works on NTFS
+        //[TestCase("👩🏽‍🚒", 248, "👩🏽‍🚒", 255)]
+        // Fitting to ext4 using UTF-8 filenames
+        [TestCase("👩🏽‍🚒", 240, "👩🏽‍🚒", 247)]
+        [TestCase("👩🏽‍🚒", 241, "a", 241)]
+        public void ShouldTruncateLongFileNamesPreserveUnicodeTextElements(string testSuffix, int countOfFillingAChars, string expectedEnd, int expectedSanitizedLength)
+        {
+            var invalidFilename = new string('a', countOfFillingAChars) + testSuffix;
+            var sanitizedFilename = invalidFilename.SanitizeFilename();
+            Assert.That(sanitizedFilename, Does.EndWith(expectedEnd));
+            Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+            Assert.That(sanitizedFilename, Has.Length.EqualTo(expectedSanitizedLength));
+            Assert.That(System.Text.Encoding.UTF8.GetByteCount(sanitizedFilename), Is.LessThan(256));
         }
 
         private bool TryWriteFileToTempDirectory(string sanitizedFilename)

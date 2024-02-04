@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Text;
 
 namespace Codeuctivity
 {
@@ -73,6 +74,10 @@ namespace Codeuctivity
         /// </summary>
 
         public static readonly char[] InvalidCharsInUnixFileNames = ['/', '\0'];
+        /// <summary>
+        /// FallbackFileName is used in cases where the sanitized file name would result in an empty string.
+        /// </summary>
+        public static readonly string FallbackFileName = "FileName";
 
         /// <summary>
         /// Sanitizes a filename by replacing invalid chars with a replacement char. Follows rules defined in https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
@@ -84,7 +89,8 @@ namespace Codeuctivity
         {
             ReplacementSanityCheck(replacement);
 
-            return InternalSanitize(filename, replacement);
+            string saneFilename = InternalSanitize(filename, replacement);
+            return UnicodeSafeStringTruncate(saneFilename);
         }
 
         private static void ReplacementSanityCheck(char replacement)
@@ -94,6 +100,7 @@ namespace Codeuctivity
 
             if (InvalidCharsInWindowsFileNames.Contains(replacement))
                 throw new ArgumentException($"Replacement char '{replacement}' is invalid for Windows file names", nameof(replacement));
+
         }
 
         private static string InternalSanitize(string filename, char replacement)
@@ -102,6 +109,9 @@ namespace Codeuctivity
             var reservedFileNamesSanitized = InternalSanitizeReservedFileNames(invalidCharsFileNamesSanitized, $"{replacement}");
             var reservedFileNamePrefixSanitized = InternalSanitizeReservedFileNamePrefix(reservedFileNamesSanitized, $"{replacement}");
             var trailingCharSanitized = RemoveTrailingPeriodOrSpace(reservedFileNamePrefixSanitized, $"{replacement}");
+
+            if (string.IsNullOrEmpty(trailingCharSanitized) || trailingCharSanitized == " " || trailingCharSanitized == ".")
+                return FallbackFileName;
 
             if (trailingCharSanitized == filename)
                 return trailingCharSanitized;
@@ -141,5 +151,50 @@ namespace Codeuctivity
 
             return filename;
         }
+
+        static string UnicodeSafeStringTruncate(string longFileName)
+        {
+
+            // Rule working for NTFS and most other file systems
+            if (Encoding.UTF8.GetByteCount(longFileName) <= 255)
+            {
+                return longFileName;
+            }
+
+            // Rule working for NTFS and most other file systems
+            //if (longFileName.Length <= 255)
+            //{
+            //    return longFileName;
+            //}
+
+
+            var builder = new StringBuilder();
+            var builderForward = new StringBuilder();
+
+            var textElementEnumerator = StringInfo.GetTextElementEnumerator(longFileName);
+
+            int textElementCount = 1;
+            while (textElementEnumerator.MoveNext())
+            {
+                builderForward.Append(textElementEnumerator.Current);
+
+                if (Encoding.UTF8.GetByteCount(builderForward.ToString()) > 255)
+                {
+                    return builder.ToString();
+                }
+
+                // Rule working for NTFS and most other file systems
+                //if (builderForward.ToString().Length > 255)
+                //{
+                //    return builder.ToString();
+                //}
+
+                builder.Append(textElementEnumerator.Current);
+                textElementCount++;
+            }
+
+            return longFileName;
+        }
     }
 }
+
