@@ -1,8 +1,6 @@
 ﻿# SanitizeFilename
 
-Sanitizes filenames
-
-Implements rules documented by [Microsoft](https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions). Runs on any .net8 target platform.
+Sanitizes filenames. Implements rules documented by [Microsoft](https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions) + file name length truncation to 255 bytes - common on [many modern](https://en.wikipedia.org/wiki/Comparison_of_file_systems) file systems. Runs on any .net8 target platform.
 
 ## Example
 
