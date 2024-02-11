@@ -102,7 +102,7 @@ namespace Codeuctivity
         public static string Sanitize(string filename, string replacement)
         {
             if (char.TryParse(replacement, out var replacementChar))
-            ReplacementSanityCheck(replacementChar);
+                ReplacementSanityCheck(replacementChar);
 
             string saneFilename = InternalSanitize(filename, replacement);
             return UnicodeSafeStringTruncate(saneFilename);
@@ -141,7 +141,7 @@ namespace Codeuctivity
         private static string InternalSanitizeChars(string filename, string replacement, char[]? invalidChars = null)
         {
             var usedInvalidChars = invalidChars ?? Path.GetInvalidFileNameChars();
-           
+
             foreach (var invalidChar in usedInvalidChars)
                 filename = filename.Replace(invalidChar.ToString(), replacement, StringComparison.Ordinal);
 
