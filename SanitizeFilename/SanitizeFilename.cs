@@ -93,17 +93,36 @@ namespace Codeuctivity
             return UnicodeSafeStringTruncate(saneFilename);
         }
 
+        /// <summary>
+        /// Sanitizes a filename by replacing invalid chars with a replacement char. Follows rules defined in https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <param name="replacement"></param>
+        /// <returns></returns>
+        public static string Sanitize(string filename, string replacement)
+        {
+            if (char.TryParse(replacement, out var replacementChar))
+                ReplacementSanityCheck(replacementChar);
+
+            string saneFilename = InternalSanitize(filename, replacement);
+            return UnicodeSafeStringTruncate(saneFilename);
+        }
+
         private static void ReplacementSanityCheck(char replacement)
         {
             if (InvalidCharsInUnixFileNames.Contains(replacement))
-                throw new ArgumentException($"Replacement char '{replacement}' is invalid for Unix file names", nameof(replacement));
+                throw new ArgumentException($"Replacement '{replacement}' is invalid for Unix file names", nameof(replacement));
 
             if (InvalidCharsInWindowsFileNames.Contains(replacement))
-                throw new ArgumentException($"Replacement char '{replacement}' is invalid for Windows file names", nameof(replacement));
-
+                throw new ArgumentException($"Replacement '{replacement}' is invalid for Windows file names", nameof(replacement));
         }
 
         private static string InternalSanitize(string filename, char replacement)
+        {
+            return InternalSanitize(filename, replacement.ToString());
+        }
+
+        private static string InternalSanitize(string filename, string replacement)
         {
             var invalidCharsFileNamesSanitized = InternalSanitizeChars(filename, replacement, InvalidCharsInWindowsFileNames);
             var reservedFileNamesSanitized = InternalSanitizeReservedFileNames(invalidCharsFileNamesSanitized, $"{replacement}");
@@ -119,11 +138,14 @@ namespace Codeuctivity
             return InternalSanitize(trailingCharSanitized, replacement);
         }
 
-        private static string InternalSanitizeChars(string filename, char replacement, char[]? invalidChars = null)
+        private static string InternalSanitizeChars(string filename, string replacement, char[]? invalidChars = null)
         {
             var usedInvalidChars = invalidChars ?? Path.GetInvalidFileNameChars();
-            var sanitizedFilename = new string(filename.Select(c => usedInvalidChars.Contains(c) ? replacement : c).ToArray());
-            return sanitizedFilename;
+
+            foreach (var invalidChar in usedInvalidChars)
+                filename = filename.Replace(invalidChar.ToString(), replacement, StringComparison.Ordinal);
+
+            return filename;
         }
 
         private static string InternalSanitizeReservedFileNames(string filename, string replacement)
