@@ -31,5 +31,18 @@
 
             return sanitizedFilename;
         }
+
+        /// <summary>
+        /// Sanitizes a filename by replacing invalid chars with a replacement string. Follows rules defined in https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <param name="replacement"></param>
+        /// <returns></returns>
+        public static string SanitizeFilename(this string filename, string replacement)
+        {
+            var sanitizedFilename = Codeuctivity.SanitizeFilename.Sanitize(filename, replacement);
+
+            return sanitizedFilename;
+        }
     }
 }
