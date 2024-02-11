@@ -52,13 +52,32 @@ namespace SanitizeFilenameTests
         {
             var ex = Assert.Throws<ArgumentException>(() => invalidFilename.SanitizeFilename(replacement));
 
-            Assert.That(ex.Message, Is.EqualTo("Replacement char '*' is invalid for Windows file names (Parameter 'replacement')"));
+            Assert.That(ex.Message, Is.EqualTo("Replacement '*' is invalid for Windows file names (Parameter 'replacement')"));
+        }
+
+        [Test]
+        public void ShouldFallbackToHardCodedDefault()
+        {
+            var sanitizedFilename = "Invalid*Filename.txt".SanitizeFilename(string.Empty);
+
+            Assert.That(sanitizedFilename, Is.EqualTo("InvalidFilename.txt"));
         }
 
         [Test]
         [TestCase("COM1", '.')]
         [TestCase("COM1", ' ')]
         public void ShouldFallbackToHardCodedDefault(string invalidFilename, char replacement)
+        {
+            var sanitizedFilename = invalidFilename.SanitizeFilename(replacement);
+
+            Assert.That(sanitizedFilename, Is.EqualTo(SanitizeFilename.FallbackFileName));
+        }
+
+        [Test]
+        [TestCase("COM1", ".")]
+        [TestCase("COM1", " ")]
+        [TestCase("COM1", "")]
+        public void ShouldFallbackToHardCodedDefault(string invalidFilename, string replacement)
         {
             var sanitizedFilename = invalidFilename.SanitizeFilename(replacement);
 
