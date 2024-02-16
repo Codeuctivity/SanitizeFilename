@@ -146,7 +146,7 @@ namespace SanitizeFilenameTests
             Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
             Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
         }
-        
+
         [Test]
         // 0x110000 is the first invalid Unicode character
         [TestCase(0x110000)]
