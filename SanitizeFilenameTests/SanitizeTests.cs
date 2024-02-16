@@ -133,12 +133,12 @@ namespace SanitizeFilenameTests
                 }
             }
 
-           // invalidFilenames.Add(("test", 1));
+            // invalidFilenames.Add(("test", 1));
 
-            Assert.That(invalidFilenames.Count, Is.Zero, formatFailingMessage(invalidFilenames));
+            Assert.That(invalidFilenames.Count, Is.Zero, FormatFailingMessage(invalidFilenames));
         }
 
-        private static string formatFailingMessage(List<(string, int)> invalidFilenames)
+        private static string FormatFailingMessage(List<(string, int)> invalidFilenames)
         {
             return "Invalid filenames: " + string.Join(", ", invalidFilenames.Take(50).Select(x => $"{x.Item1} ({x.Item2})"));
         }
