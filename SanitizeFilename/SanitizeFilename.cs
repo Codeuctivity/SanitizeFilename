@@ -176,46 +176,39 @@ namespace Codeuctivity
 
         static string UnicodeSafeStringTruncate(string longFileName)
         {
-
-            // Rule working for NTFS and most other file systems
-            if (Encoding.UTF8.GetByteCount(longFileName) <= 255)
+            // Most filenames are shorter than 255 bytes, so we can avoid the expensive string enumeration in most cases
+            if (FileNameLengthIsExt4Compatible(longFileName))
             {
                 return longFileName;
             }
-
-            // Rule working for NTFS and most other file systems
-            //if (longFileName.Length <= 255)
-            //{
-            //    return longFileName;
-            //}
-
 
             var builder = new StringBuilder();
             var builderForward = new StringBuilder();
 
             var textElementEnumerator = StringInfo.GetTextElementEnumerator(longFileName);
 
-            int textElementCount = 1;
             while (textElementEnumerator.MoveNext())
             {
                 builderForward.Append(textElementEnumerator.Current);
 
-                if (Encoding.UTF8.GetByteCount(builderForward.ToString()) > 255)
+                // Rule working for EXT4 and most other file systems
+                if (!FileNameLengthIsExt4Compatible(builderForward.ToString()))
                 {
                     return builder.ToString();
                 }
 
-                // Rule working for NTFS and most other file systems
-                //if (builderForward.ToString().Length > 255)
-                //{
-                //    return builder.ToString();
-                //}
-
                 builder.Append(textElementEnumerator.Current);
-                textElementCount++;
             }
 
             return longFileName;
+        }
+
+        private static bool FileNameLengthIsExt4Compatible(string longFileName)
+        {
+            // Rule that would be working for NTFS
+            //longFileName.Length <= 255
+
+            return Encoding.UTF8.GetByteCount(longFileName) <= 255;
         }
     }
 }

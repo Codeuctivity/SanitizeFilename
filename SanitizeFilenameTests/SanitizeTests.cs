@@ -103,10 +103,12 @@ namespace SanitizeFilenameTests
         }
 
         [Test]
-        public void Experiment()
+        public void ShouldUseFilenameWithAnyCharExceptTheExceptions()
         {
+            var validFilenames = new List<string>();
+
             // Iterate every UTF16 value
-            for (int i = 0; i <= 165535; i++)
+            for (int i = 0; i <= 65535; i++)
             {
                 char aValidChar = (char)i;
 
@@ -117,9 +119,21 @@ namespace SanitizeFilenameTests
                     var sanitizedFilename = valid.SanitizeFilename();
 
                     Assert.That(sanitizedFilename, Is.EqualTo(valid));
-                    Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+                    validFilenames.Add(sanitizedFilename);
+
                 }
             }
+
+            var invalidFilenames = new List<string>();
+            foreach (var validFilename in validFilenames)
+            {
+                if (!TryWriteFileToTempDirectory(validFilename))
+                {
+                    invalidFilenames.Add(validFilename);
+                }
+            }
+
+            Assert.That(invalidFilenames.Count, Is.Zero, "Invalid filenames: " + string.Join(", ", invalidFilenames.Take(50)));
         }
 
         [Test]
