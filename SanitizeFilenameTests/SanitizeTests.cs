@@ -146,6 +146,19 @@ namespace SanitizeFilenameTests
             Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
             Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
         }
+        
+        [Test]
+        // 0x110000 is the first invalid Unicode character
+        [TestCase(0x110000)]
+        // 55296 is a unpaired surrogate
+        [TestCase(55296)]
+        public void ShouldSanitizeInvalidUnicodeCharacters(int invalidUnicode)
+        {
+            string invalidFilename = (char)invalidUnicode + ".txt";
+            var sanitizedFilename = invalidFilename.SanitizeFilename();
+            Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
+            Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+        }
 
         [Test]
         [TestCaseSource(nameof(ReservedWindowsFileNames))]
