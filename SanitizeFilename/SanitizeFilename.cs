@@ -178,7 +178,7 @@ namespace Codeuctivity
         /// <returns></returns>
         public static string RemoveUnpairedSurrogates(string input)
         {
-            if (!string.IsNullOrEmpty(input))
+            if (string.IsNullOrEmpty(input))
                 return input;
 
             var result = new StringBuilder();
