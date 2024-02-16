@@ -145,7 +145,29 @@ namespace Codeuctivity
             foreach (var invalidChar in usedInvalidChars)
                 filename = filename.Replace(invalidChar.ToString(), replacement, StringComparison.Ordinal);
 
+            filename = ReplaceInvalidUnicodeChars(filename, replacement);
+
             return filename;
+        }
+
+        // replace invalid unicode characters with a replacement character (they were failing on github runner using ubuntu)
+        private static string ReplaceInvalidUnicodeChars(string input, string replacement)
+        {
+            var validChars = new StringBuilder();
+
+            foreach (char c in input)
+            {
+                if (c <= 0x10FFFF)
+                {
+                    validChars.Append(c);
+                }
+                else
+                {
+                    validChars.Append(replacement);
+                }
+            }
+
+            return validChars.ToString();
         }
 
         private static string InternalSanitizeReservedFileNames(string filename, string replacement)

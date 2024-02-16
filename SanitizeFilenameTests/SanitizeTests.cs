@@ -111,18 +111,13 @@ namespace SanitizeFilenameTests
             for (int i = 0; i <= 65535; i++)
             {
                 char aValidChar = (char)i;
+                var valid = "valid" + new string(aValidChar, 1) + "filename";
 
-                if (!SanitizeFilename.InvalidCharsInWindowsFileNames.Contains(aValidChar))
-                {
-                    var valid = "valid" + new string(aValidChar, 1) + "filename";
+                var sanitizedFilename = valid.SanitizeFilename();
 
-                    var sanitizedFilename = valid.SanitizeFilename();
-
-                    Assert.That(sanitizedFilename, Is.EqualTo(valid));
-                    validFilenames.Add((sanitizedFilename, i));
-
-                }
+                validFilenames.Add((sanitizedFilename, i));
             }
+
 
             var invalidFilenames = new List<(string, int)>();
             foreach (var validFilename in validFilenames)
