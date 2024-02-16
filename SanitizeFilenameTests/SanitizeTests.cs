@@ -103,6 +103,26 @@ namespace SanitizeFilenameTests
         }
 
         [Test]
+        public void Experiment()
+        {
+            // Iterate every UTF16 value
+            for (int i = 0; i <= 165535; i++)
+            {
+                char aValidChar = (char)i;
+
+                if (!SanitizeFilename.InvalidCharsInWindowsFileNames.Contains(aValidChar))
+                {
+                    var valid = "valid" + new string(aValidChar, 1) + "filename";
+
+                    var sanitizedFilename = valid.SanitizeFilename();
+
+                    Assert.That(sanitizedFilename, Is.EqualTo(valid));
+                    Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+                }
+            }
+        }
+
+        [Test]
         [TestCaseSource(nameof(InvalidWindowsFileNames))]
         public void ShouldSanitizeInvalidWindowsFileNames(string invalidFilename)
         {
