@@ -52,7 +52,7 @@ namespace SanitizeFilenameTests
         {
             var ex = Assert.Throws<ArgumentException>(() => invalidFilename.SanitizeFilename(replacement));
 
-            Assert.That(ex.Message, Is.EqualTo("Replacement '*' is invalid for Windows file names (Parameter 'replacement')"));
+            Assert.That(ex.Message, Is.EqualTo("Replacement '*' is invalid for Windows (Parameter 'replacement')"));
         }
 
         [Test]
@@ -128,14 +128,15 @@ namespace SanitizeFilenameTests
                 }
             }
 
-            // invalidFilenames.Add(("test", 1));
+            //invalidFilenames.Add(("test", 1));
+            //invalidFilenames.Add(("test", 2));
 
-            Assert.That(invalidFilenames.Count, Is.Zero, FormatFailingMessage(invalidFilenames));
+            Assert.That(invalidFilenames.Count, Is.Zero, GenerateAssertionMessage(invalidFilenames));
         }
 
-        private static string FormatFailingMessage(List<(string, int)> invalidFilenames)
+        private static string GenerateAssertionMessage(List<(string, int)> invalidFilenames)
         {
-            return "Invalid filenames: " + string.Join(", ", invalidFilenames.Take(50).Select(x => $"{x.Item1} ({x.Item2})"));
+            return "Invalid chars: " + string.Join(", ", invalidFilenames.Select(x => $"{x.Item2}"));
         }
 
         [Test]

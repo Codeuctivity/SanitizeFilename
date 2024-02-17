@@ -18,9 +18,6 @@ namespace Codeuctivity
         /// </summary>
         public static readonly string[] ReservedWindowsFileNamesWithExtension = ["CON.", "PRN.", "AUX.", "NUL.", "COM0.", "COM1.", "COM2.", "COM3.", "COM4.", "COM5.", "COM6.", "COM7.", "COM8.", "COM9.", "COM\u00B9.", "COM\u00B2.", "COM\u00B3.", "LPT0.", "LPT1.", "LPT2.", "LPT3.", "LPT4.", "LPT5.", "LPT6.", "LPT7.", "LPT8.", "LPT9.", "LPT\u00B9.", "LPT\u00B2.", "LPT\u00B3."];
 
-        /// <summary>
-        ///
-        /// </summary>
         public static readonly char[] InvalidCharsInWindowsFileNames = ['\\',
             '/',
             '\"',
@@ -63,6 +60,19 @@ namespace Codeuctivity
             (char)30,
             (char)31,
         ];
+
+        /// <summary>
+        /// Chars that are invalid in MacOs file names
+        /// </summary>
+        public static readonly char[] InvalidCharsInMacOsFileNames = [
+            (char)888,
+        ];
+
+        /// <summary>
+        /// Chars that are invalid in Windows and MacOs file names
+        /// </summary>
+        public static readonly char[] InvalidCharsInWindowsAndMacOsFileNames = InvalidCharsInWindowsFileNames.Concat(InvalidCharsInMacOsFileNames).ToArray();
+
 
         /// <summary>
         /// These chars are invalid in Windows file names
@@ -111,10 +121,13 @@ namespace Codeuctivity
         private static void ReplacementSanityCheck(char replacement)
         {
             if (InvalidCharsInUnixFileNames.Contains(replacement))
-                throw new ArgumentException($"Replacement '{replacement}' is invalid for Unix file names", nameof(replacement));
+                throw new ArgumentException($"Replacement '{replacement}' is invalid for Unix", nameof(replacement));
 
             if (InvalidCharsInWindowsFileNames.Contains(replacement))
-                throw new ArgumentException($"Replacement '{replacement}' is invalid for Windows file names", nameof(replacement));
+                throw new ArgumentException($"Replacement '{replacement}' is invalid for Windows", nameof(replacement));
+
+            if (InvalidCharsInMacOsFileNames.Contains(replacement))
+                throw new ArgumentException($"Replacement '{replacement}' is invalid for MacOs", nameof(replacement));
         }
 
         private static string InternalSanitize(string filename, char replacement)
@@ -124,7 +137,8 @@ namespace Codeuctivity
 
         private static string InternalSanitize(string filename, string replacement)
         {
-            var invalidCharsFileNamesSanitized = InternalSanitizeChars(filename, replacement, InvalidCharsInWindowsFileNames);
+
+            var invalidCharsFileNamesSanitized = InternalSanitizeChars(filename, replacement, InvalidCharsInWindowsAndMacOsFileNames);
             var reservedFileNamesSanitized = InternalSanitizeReservedFileNames(invalidCharsFileNamesSanitized, $"{replacement}");
             var reservedFileNamePrefixSanitized = InternalSanitizeReservedFileNamePrefix(reservedFileNamesSanitized, $"{replacement}");
             var trailingCharSanitized = RemoveTrailingPeriodOrSpace(reservedFileNamePrefixSanitized, $"{replacement}");
@@ -190,7 +204,8 @@ namespace Codeuctivity
                     // High surrogate is followed by a low surrogate
                     result.Append(input[i]);
                     result.Append(input[i + 1]);
-                    i++; // Skip the next character
+                    // Skip the next character
+                    i++;
                 }
                 else if (char.IsLowSurrogate(input[i]) && (i > 0 && char.IsHighSurrogate(input[i - 1])))
                 {
