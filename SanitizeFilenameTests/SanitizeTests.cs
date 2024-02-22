@@ -122,10 +122,11 @@ namespace SanitizeFilenameTests
             var invalidFilenames = new List<(string, int)>();
             foreach (var validFilename in validFilenames)
             {
-                if (!TryWriteFileToTempDirectory(validFilename.Item1))
-                {
-                    invalidFilenames.Add(validFilename);
-                }
+                AssertFileIsWriteable(validFilename.Item1, validFilename.Item2);
+                //if (!TryWriteFileToTempDirectory(validFilename.Item1))
+                //{
+                //    invalidFilenames.Add(validFilename);
+                //}
             }
 
             //invalidFilenames.Add(("test", 1));
@@ -218,6 +219,21 @@ namespace SanitizeFilenameTests
             {
                 return false;
             }
+        }
+        private void AssertFileIsWriteable(string sanitizedFilename, int charAsInt)
+        {
+            var path = Path.Combine(_tempPath, sanitizedFilename);
+            File.WriteAllText(path, "testFileContent");
+            if (!File.Exists(path))
+                Assert.Fail($"File {path} ({charAsInt}) not written");
+
+            // check if file is in directory, File.WriteAllText will implicitly sanitize some filenames, e.g. "invalid:filename" -> "invalid"
+            var listOfFileNames = Directory.GetFiles(_tempPath);
+
+            if (!listOfFileNames.Contains(path))
+                Assert.Fail($"File {path} ({charAsInt}) not written");
+
+            File.Delete(path);
         }
     }
 }
