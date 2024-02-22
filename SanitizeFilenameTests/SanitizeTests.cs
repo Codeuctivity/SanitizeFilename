@@ -223,7 +223,15 @@ namespace SanitizeFilenameTests
         private void AssertFileIsWriteable(string sanitizedFilename, int charAsInt)
         {
             var path = Path.Combine(_tempPath, sanitizedFilename);
-            File.WriteAllText(path, "testFileContent");
+            try
+            {
+
+                File.WriteAllText(path, "testFileContent");
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail($"Failed to write {path} ({charAsInt}) not written {ex}");
+            }
             if (!File.Exists(path))
                 Assert.Fail($"File {path} ({charAsInt}) not written");
 
@@ -234,6 +242,7 @@ namespace SanitizeFilenameTests
                 Assert.Fail($"File {path} ({charAsInt}) not written");
 
             File.Delete(path);
+
         }
     }
 }
