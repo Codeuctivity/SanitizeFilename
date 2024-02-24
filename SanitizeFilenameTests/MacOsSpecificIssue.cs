@@ -20,7 +20,7 @@ namespace SanitizeFilenameTests
             File.WriteAllText(filenameThatCantBeWrittonOnMacOs, "content");
 
             char aValidChar = (char)930;
-            var valid = "valid" + new string(aValidChar, 1) + "filename"
+            var valid = "valid" + new string(aValidChar, 1) + "filename";
             File.WriteAllText(filenameThatCantBeWrittonOnMacOs, "content");
 
             Assert.Pass("This test will only fail on MacOS");
