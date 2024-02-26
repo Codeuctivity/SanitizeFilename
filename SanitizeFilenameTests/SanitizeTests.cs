@@ -108,25 +108,24 @@ namespace SanitizeFilenameTests
             var validFilenames = new List<(string, int)>();
 
             // Iterate every UTF16 value
-            for (int i = 0; i <= 65535; i++)
+            for (int i = 0; i <= char.MaxValue; i++)
             {
-                char aValidChar = (char)i;
-                var valid = "valid" + new string(aValidChar, 1) + "filename";
+                // Unicode chars and chars that are no valid unicode chars
+                char someChar = (char)i;
+                var mightBeValid = "valid" + new string(someChar, 1) + "filename";
 
-                var sanitizedFilename = valid.SanitizeFilename();
+                var sanitizedFilename = mightBeValid.SanitizeFilename();
 
                 validFilenames.Add((sanitizedFilename, i));
             }
 
-
             var invalidFilenames = new List<(string, int)>();
             foreach (var validFilename in validFilenames)
             {
-                AssertFileIsWriteable(validFilename.Item1, validFilename.Item2);
-                //if (!TryWriteFileToTempDirectory(validFilename.Item1))
-                //{
-                //    invalidFilenames.Add(validFilename);
-                //}
+                if (!TryWriteFileToTempDirectory(validFilename.Item1))
+                {
+                    invalidFilenames.Add(validFilename);
+                }
             }
 
             //invalidFilenames.Add(("test", 1));
@@ -219,30 +218,6 @@ namespace SanitizeFilenameTests
             {
                 return false;
             }
-        }
-        private void AssertFileIsWriteable(string sanitizedFilename, int charAsInt)
-        {
-            var path = Path.Combine(_tempPath, sanitizedFilename);
-            try
-            {
-
-                File.WriteAllText(path, "testFileContent");
-            }
-            catch (Exception ex)
-            {
-                Assert.Fail($"Failed to write {path} ({charAsInt}) not written {ex}");
-            }
-            if (!File.Exists(path))
-                Assert.Fail($"File {path} ({charAsInt}) not written");
-
-            // check if file is in directory, File.WriteAllText will implicitly sanitize some filenames, e.g. "invalid:filename" -> "invalid"
-            var listOfFileNames = Directory.GetFiles(_tempPath);
-
-            if (!listOfFileNames.Contains(path))
-                Assert.Fail($"File {path} ({charAsInt}) not written");
-
-            File.Delete(path);
-
         }
     }
 }

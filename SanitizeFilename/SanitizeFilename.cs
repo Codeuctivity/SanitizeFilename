@@ -62,7 +62,7 @@ namespace Codeuctivity
         ];
 
         /// <summary>
-        /// Chars that are invalid in MacOs file names
+        /// Chars that trigger an System.IO.IOException: 'Illegal byte sequence' on MacOs, these are all in the UnicodeCategory.OtherNotAssigned category
         /// </summary>
         public static readonly char[] InvalidCharsInMacOsFileNames = [
             (char)888,
@@ -403,7 +403,8 @@ namespace Codeuctivity
             (char)3300,
             (char)3301,
             (char)3312,
-            (char)3315,
+            //SpacingCombiningMark
+            //(char)3315,
             (char)3316,
             (char)3317,
             (char)3318,
@@ -514,7 +515,8 @@ namespace Codeuctivity
             (char)3775,
             (char)3781,
             (char)3783,
-            (char)3790,
+            //NonSpacingMark
+            //(char)3790,
             (char)3791,
             (char)3802,
             (char)3803,
