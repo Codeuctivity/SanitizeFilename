@@ -15,13 +15,17 @@ namespace SanitizeFilenameTests
         [Test, Platform(Include = "MacOsX")]
         public void InvalidCharsInMacOsFilenameShouldFailToWriteFile()
         {
+            var validFilenames = new List<(string, int)>();
             foreach (var item in SanitizeFilename.InvalidCharsInMacOsFileNames)
             {
+
                 var invalidFilename = item + ".txt";
                 var sanitizedFilename = invalidFilename.SanitizeFilename();
                 Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
-                Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.False);
+                validFilenames.Add((sanitizedFilename, item));
             }
+
+            FileWriteAsserter.AssertCollection(validFilenames);
         }
 
 

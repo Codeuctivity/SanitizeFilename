@@ -1,4 +1,5 @@
-﻿namespace SanitizeFilenameTests
+﻿
+namespace SanitizeFilenameTests
 {
     public class FileWriteAsserter
     {
@@ -18,6 +19,28 @@
             {
                 return false;
             }
+        }
+
+        internal static void AssertCollection(List<(string, int)> validFilenames)
+        {
+            var invalidFilenames = new List<(string, int)>();
+            foreach (var validFilename in validFilenames)
+            {
+                if (!FileWriteAsserter.TryWriteFileToTempDirectory(validFilename.Item1))
+                {
+                    invalidFilenames.Add(validFilename);
+                }
+            }
+
+            //invalidFilenames.Add(("test", 1));
+            //invalidFilenames.Add(("test", 2));
+
+            Assert.That(invalidFilenames.Count, Is.Zero, GenerateAssertionMessage(invalidFilenames));
+        }
+
+        private static string GenerateAssertionMessage(List<(string, int)> invalidFilenames)
+        {
+            return "Invalid chars: " + string.Join(", ", invalidFilenames.Select(x => $"{x.Item2}"));
         }
     }
 }
