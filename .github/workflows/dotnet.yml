@@ -1,4 +1,4 @@
-name: .NET build and test
+﻿name: .NET build and test
 env:
   CURRENT_VERSION: 1.0.${{ github.run_number }}
   LAST_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
@@ -20,12 +20,32 @@ jobs:
         with:
           dotnet-version: |
             8.0.x
+      - name: Print OS name
+        shell: bash
+        run: |
+          echo "$RUNNER_OS"
+      - name: Show filesystem on windows
+        if: runner.os == 'Windows'
+        run: Get-Volume
+      - name: Show filesystem on ubuntu
+        if: runner.os == 'Linux'
+        run: df -h
+      - name: Show filesystem on macos
+        if: runner.os == 'MacOs'
+        run: df -h
       - name: Check formatting
         run: dotnet format --verify-no-changes
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
         run: dotnet build --configuration Release --no-restore
+      - name: Write unicod file using bash
+        shell: bash
+        if: runner.os == 'MacOs'
+        run: |
+          ls -l
+          touch valid줰Filename.txt
+          ls -l
       - name: Test
         run: dotnet test --no-build --verbosity normal --configuration Release
 
