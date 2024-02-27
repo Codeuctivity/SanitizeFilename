@@ -52,7 +52,7 @@ namespace SanitizeFilenameTests
         {
             var ex = Assert.Throws<ArgumentException>(() => invalidFilename.SanitizeFilename(replacement));
 
-            Assert.That(ex.Message, Is.EqualTo("Replacement '*' is invalid for Windows file names (Parameter 'replacement')"));
+            Assert.That(ex.Message, Is.EqualTo("Replacement '*' is invalid for Windows (Parameter 'replacement')"));
         }
 
         [Test]
@@ -98,8 +98,28 @@ namespace SanitizeFilenameTests
                 var sanitizedFilename = invalidFilename.SanitizeFilename();
 
                 Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
-                Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+                Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
             }
+        }
+
+        [Test]
+        public void ShouldUseFilenameWithAnyCharExceptTheExceptions()
+        {
+            var validFilenames = new List<(string, int)>();
+
+            // Iterate every UTF16 value
+            for (int i = 0; i <= char.MaxValue; i++)
+            {
+                // Unicode chars and chars that are no valid unicode chars
+                char someChar = (char)i;
+                var mightBeValid = "valid" + new string(someChar, 1) + "filename";
+
+                var sanitizedFilename = mightBeValid.SanitizeFilename();
+
+                validFilenames.Add((sanitizedFilename, i));
+            }
+
+            FileWriteAsserter.AssertCollection(validFilenames);
         }
 
         [Test]
@@ -108,7 +128,20 @@ namespace SanitizeFilenameTests
         {
             var sanitizedFilename = invalidFilename.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
-            Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+        }
+
+        [Test]
+        // 0x110000 is the first invalid Unicode character
+        [TestCase(0x110000)]
+        // 55296 is a unpaired surrogate
+        [TestCase(55296)]
+        public void ShouldSanitizeInvalidUnicodeCharacters(int invalidUnicode)
+        {
+            string invalidFilename = (char)invalidUnicode + ".txt";
+            var sanitizedFilename = invalidFilename.SanitizeFilename();
+            Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
+            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
         }
 
         [Test]
@@ -117,7 +150,7 @@ namespace SanitizeFilenameTests
         {
             var sanitizedFilename = invalidFilename.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
-            Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
         }
 
         [Test]
@@ -126,7 +159,7 @@ namespace SanitizeFilenameTests
         {
             var sanitizedFilename = invalidFilename.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
-            Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
         }
 
         [Test]
@@ -141,33 +174,9 @@ namespace SanitizeFilenameTests
             var invalidFilename = new string('a', countOfFillingAChars) + testSuffix;
             var sanitizedFilename = invalidFilename.SanitizeFilename();
             Assert.That(sanitizedFilename, Does.EndWith(expectedEnd));
-            Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
             Assert.That(sanitizedFilename, Has.Length.EqualTo(expectedSanitizedLength));
             Assert.That(System.Text.Encoding.UTF8.GetByteCount(sanitizedFilename), Is.LessThan(256));
-        }
-
-        private bool TryWriteFileToTempDirectory(string sanitizedFilename)
-        {
-            try
-            {
-                var path = Path.Combine(_tempPath, sanitizedFilename);
-                File.WriteAllText(path, "testFileContent");
-                if (!File.Exists(path))
-                    return false;
-
-                // check if file is in directory, File.WriteAllText will implicitly sanitize some filenames, e.g. "invalid:filename" -> "invalid"
-                var listOfFileNames = Directory.GetFiles(_tempPath);
-
-                if (!listOfFileNames.Contains(path))
-                    return false;
-
-                File.Delete(path);
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
         }
     }
 }
