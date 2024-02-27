@@ -98,7 +98,7 @@ namespace SanitizeFilenameTests
                 var sanitizedFilename = invalidFilename.SanitizeFilename();
 
                 Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
-                Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+                Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
             }
         }
 
@@ -122,7 +122,7 @@ namespace SanitizeFilenameTests
             var invalidFilenames = new List<(string, int)>();
             foreach (var validFilename in validFilenames)
             {
-                if (!TryWriteFileToTempDirectory(validFilename.Item1))
+                if (!FileWriteAsserter.TryWriteFileToTempDirectory(validFilename.Item1))
                 {
                     invalidFilenames.Add(validFilename);
                 }
@@ -145,7 +145,7 @@ namespace SanitizeFilenameTests
         {
             var sanitizedFilename = invalidFilename.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
-            Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
         }
 
         [Test]
@@ -158,7 +158,7 @@ namespace SanitizeFilenameTests
             string invalidFilename = (char)invalidUnicode + ".txt";
             var sanitizedFilename = invalidFilename.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
-            Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
         }
 
         [Test]
@@ -167,7 +167,7 @@ namespace SanitizeFilenameTests
         {
             var sanitizedFilename = invalidFilename.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
-            Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
         }
 
         [Test]
@@ -176,7 +176,7 @@ namespace SanitizeFilenameTests
         {
             var sanitizedFilename = invalidFilename.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
-            Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
         }
 
         [Test]
@@ -191,33 +191,9 @@ namespace SanitizeFilenameTests
             var invalidFilename = new string('a', countOfFillingAChars) + testSuffix;
             var sanitizedFilename = invalidFilename.SanitizeFilename();
             Assert.That(sanitizedFilename, Does.EndWith(expectedEnd));
-            Assert.That(TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
             Assert.That(sanitizedFilename, Has.Length.EqualTo(expectedSanitizedLength));
             Assert.That(System.Text.Encoding.UTF8.GetByteCount(sanitizedFilename), Is.LessThan(256));
-        }
-
-        private bool TryWriteFileToTempDirectory(string sanitizedFilename)
-        {
-            try
-            {
-                var path = Path.Combine(_tempPath, sanitizedFilename);
-                File.WriteAllText(path, "testFileContent");
-                if (!File.Exists(path))
-                    return false;
-
-                // check if file is in directory, File.WriteAllText will implicitly sanitize some filenames, e.g. "invalid:filename" -> "invalid"
-                var listOfFileNames = Directory.GetFiles(_tempPath);
-
-                if (!listOfFileNames.Contains(path))
-                    return false;
-
-                File.Delete(path);
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
         }
     }
 }

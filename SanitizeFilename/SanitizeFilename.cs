@@ -62,9 +62,14 @@ namespace Codeuctivity
         ];
 
         /// <summary>
-        /// Chars that trigger an System.IO.IOException: 'Illegal byte sequence' on MacOs, these are all in the UnicodeCategory.OtherNotAssigned category
+        /// Chars that trigger an System.IO.IOException: 'Illegal byte sequence' on MacOs, these are all in the UnicodeCategory.OtherNotAssigned category (with two exceptions), see https://docs.microsoft.com/en-us/dotnet/api/system.globalization.unicodecategory
         /// </summary>
         public static readonly char[] InvalidCharsInMacOsFileNames = [
+            //NonSpacingMark
+            (char)3790,
+            //SpacingCombiningMark
+            (char)3315,
+            //OtherNotAssigned
             (char)888,
             (char)889,
             (char)896,
@@ -403,8 +408,6 @@ namespace Codeuctivity
             (char)3300,
             (char)3301,
             (char)3312,
-            //SpacingCombiningMark
-            //(char)3315,
             (char)3316,
             (char)3317,
             (char)3318,
@@ -515,8 +518,6 @@ namespace Codeuctivity
             (char)3775,
             (char)3781,
             (char)3783,
-            //NonSpacingMark
-            //(char)3790,
             (char)3791,
             (char)3802,
             (char)3803,
@@ -1522,7 +1523,8 @@ namespace Codeuctivity
             (char)65527,
             (char)65528,
             (char)65534,
-            (char)65535
+            (char)65535,
+  
            ];
 
         /// <summary>
