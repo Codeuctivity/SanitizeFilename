@@ -26,7 +26,7 @@ namespace SanitizeFilenameTests
             var invalidFilenames = new List<(string, int)>();
             foreach (var validFilename in validFilenames)
             {
-                if (!FileWriteAsserter.TryWriteFileToTempDirectory(validFilename.Item1))
+                if (!TryWriteFileToTempDirectory(validFilename.Item1))
                 {
                     invalidFilenames.Add(validFilename);
                 }

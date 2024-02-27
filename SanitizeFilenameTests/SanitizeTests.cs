@@ -119,24 +119,7 @@ namespace SanitizeFilenameTests
                 validFilenames.Add((sanitizedFilename, i));
             }
 
-            var invalidFilenames = new List<(string, int)>();
-            foreach (var validFilename in validFilenames)
-            {
-                if (!FileWriteAsserter.TryWriteFileToTempDirectory(validFilename.Item1))
-                {
-                    invalidFilenames.Add(validFilename);
-                }
-            }
-
-            //invalidFilenames.Add(("test", 1));
-            //invalidFilenames.Add(("test", 2));
-
-            Assert.That(invalidFilenames.Count, Is.Zero, GenerateAssertionMessage(invalidFilenames));
-        }
-
-        private static string GenerateAssertionMessage(List<(string, int)> invalidFilenames)
-        {
-            return "Invalid chars: " + string.Join(", ", invalidFilenames.Select(x => $"{x.Item2}"));
+            FileWriteAsserter.AssertCollection(validFilenames);
         }
 
         [Test]
