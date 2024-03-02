@@ -1622,7 +1622,7 @@ namespace Codeuctivity
                 filename = filename.Replace(invalidChar.ToString(), replacement, StringComparison.Ordinal);
 
             filename = ReplaceInvalidUnicodeChars(filename, replacement);
-            filename = RemoveUnpairedSurrogates(filename);
+            //filename = RemoveUnpairedSurrogates(filename);
 
             return filename;
         }
