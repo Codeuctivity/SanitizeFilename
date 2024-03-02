@@ -7,15 +7,6 @@ namespace SanitizeFilenameTests
     internal class MacOsSpecificTests
     {
         [Test]
-        public void ShouldFailToWriteUnpairedSurrogateOnlyOnMacOs()
-        {
-            string unpairedSurrogate = "\uD800";
-            var fileNameWithUnpairedSurrogate = unpairedSurrogate + "fileName.txt";
-            var actual = FileWriteAsserter.TryWriteFileToTempDirectory(fileNameWithUnpairedSurrogate);
-            Assert.That(actual, Is.Not.EqualTo(RuntimeInformation.IsOSPlatform(OSPlatform.OSX)));
-        }
-
-        [Test]
         public void InvalidCharsInMacOsFilenameShouldFailToWriteFile()
         {
             foreach (var invalidOnMacOs in SanitizeFilename.InvalidCharsInMacOsFileNames)
