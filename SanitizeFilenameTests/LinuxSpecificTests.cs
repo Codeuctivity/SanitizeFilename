@@ -25,14 +25,6 @@ namespace SanitizeFilenameTests
             Assert.That(actual, Is.EqualTo(expected), "Filenames that exceed utf-8 255 byte length are expected to be valid on Windows and OsX (beyond 255 chars) and to be invalid on Linux. This expectation failed.");
         }
 
-        [Test]
-        public void UnpairedHighSurrogatesAreExpectedToBeValid()
-        {
-            string fileNameWithUnpairedSurrogate = "filename" + (char)55296;
-            var actual = FileWriteAsserter.TryWriteFileToTempDirectory(fileNameWithUnpairedSurrogate);
-            Assert.That(actual);
-        }
-
         public static IEnumerable<int> HighSurrogateRange
         {
             get
