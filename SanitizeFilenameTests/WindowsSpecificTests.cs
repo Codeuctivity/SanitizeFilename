@@ -1,12 +1,11 @@
 ﻿using Codeuctivity;
 using System.Globalization;
-using System.Runtime.InteropServices;
 
 namespace SanitizeFilenameTests
 {
-    internal class MacOsSpecificTests
+    internal class WindowsSpecificTests
     {
-        public MacOsSpecificTests()
+        public WindowsSpecificTests()
         {
             FileWriteAsserter = new FileWriteAsserter();
         }
@@ -20,20 +19,24 @@ namespace SanitizeFilenameTests
 
         public FileWriteAsserter FileWriteAsserter { get; }
 
-        [Test, TestCaseSource(typeof(SanitizeFilename), nameof(SanitizeFilename.InvalidCharsInMacOsFileNames))]
-        public void ShouldBehaviorOsDependentOnWritingFilenameWithKnownOsXSpecificExceptions(char invalidOnMacOs)
+        [Test, TestCaseSource(typeof(SanitizeFilename), nameof(SanitizeFilename.InvalidCharsInWindowsFileNames)), Platform("Win")]
+        public void ShouldBehaviorOsDependentOnWritingFilenameWithKnownWindowsSpecificExceptions(char invalidOnWindows)
         {
-            var expected = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-            var filenameInvalidOnMacOs = invalidOnMacOs + "Filename.txt";
+            var filenameInvalidOnMacOs = "valid" + invalidOnWindows + "filename";
             var actual = FileWriteAsserter.TryWriteFileToTempDirectory(filenameInvalidOnMacOs);
-            Assert.That(actual, Is.EqualTo(expected));
+            Assert.That(actual, Is.False);
         }
 
         [Test]
         public void ShouldProofThatThereAreOnlyKnownExceptionsInListOfInvalidUnicodeCodePoints()
         {
-            foreach (var item in SanitizeFilename.InvalidCharsInMacOsFileNames)
+            foreach (var item in SanitizeFilename.InvalidCharsInWindowsFileNames)
             {
+                if (item < 200)
+                {
+                    continue;
+                }
+
                 var category = CharUnicodeInfo.GetUnicodeCategory(item);
 
                 if (item == (char)3315)

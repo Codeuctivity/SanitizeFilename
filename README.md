@@ -22,3 +22,19 @@ string safeFileNameOptionalReplacementChar = unsafeString.SanitizeFilename(' ');
 Console.WriteLine($"SafeFileNameOptionalReplacementChar: {safeFileNameOptionalReplacementChar}");
 //SafeFileNameOptionalReplacementChar: file Name
 ```
+
+## Rules
+
+Restrictions of Windwos, Linux and MacOs are alle combined to an replacemant pattern, that will sanitize any filename to be compatible with any of the OS and common filesystem restrictions.
+
+| Pattern                          | OS that dont support pattern | OS that support pattern | Example            |
+| -------------------------------- | ---------------------------- | ----------------------- | ------------------ |
+| Reserverd keywords               | Windows                      | Linux, MacOs           | CON, PRN, AUX, ... |
+| Reserved chars                   | Linux, Windows, MacOs        |                         | '/', '\0'          |
+| Reserved chars windows          | Windows                      | Linux, MacOs           | '\\\', '""'        |
+| NotAssigned to unicode           | MacOs                        | Linux, Windows          |                    |
+| InvalidTrailingChars             | Windows                      | Linux, MacOs           |                    |
+| Max length Linux                 |                              | Windows, MacOs         |                    |
+| Max length others                |                              |                         |                    |
+| Unpaired surrogates              |                              |                         |                    |
+| UnicodeCategory.OtherNotAssigned |                              |                         |                    |
