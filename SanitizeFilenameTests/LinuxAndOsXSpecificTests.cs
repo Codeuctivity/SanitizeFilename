@@ -66,7 +66,7 @@ namespace SanitizeFilenameTests
             Assert.That(actual, Is.EqualTo(expected), $"Expected the low surrogate {i:X4} to be valid to use in filenames.");
         }
 
-        [Test, TestCaseSource(nameof(HighSurrogateRange))]
+        [Test, TestCaseSource(nameof(LowSurrogateRange))]
         public void LowSurrogatesShouldBeSanitized(int i)
         {
             string fileNameWithUnpairedSurrogate = (char)i + "filename";
