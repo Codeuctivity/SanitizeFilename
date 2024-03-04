@@ -37,11 +37,12 @@ namespace SanitizeFilenameTests
         }
 
         [Test, TestCaseSource(nameof(HighSurrogateRange))]
-        public void TestHighSurrogates(int i)
+        public void HighSurrogatesShouldFailToBeUsedAsFileNameOnLinux(int i)
         {
+            var expected = !RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
             string fileNameWithUnpairedSurrogate = "filename" + (char)i;
             var actual = FileWriteAsserter.TryWriteFileToTempDirectory(fileNameWithUnpairedSurrogate);
-            Assert.That(actual, Is.True, $"Expected the high surrogate {i:X4} to be valid to use in filenames.");
+            Assert.That(actual, Is.EqualTo(expected), $"Expected the high surrogate {i:X4} to be valid to use in filenames.");
         }
 
         public static IEnumerable<int> LowSurrogateRange
@@ -58,11 +59,12 @@ namespace SanitizeFilenameTests
         public FileWriteAsserter FileWriteAsserter { get; }
 
         [Test, TestCaseSource(nameof(LowSurrogateRange))]
-        public void TestLowSurrogates(int i)
+        public void LowSurrogatesShouldFailToBeUsedAsFileNameOnLinux(int i)
         {
-            string fileNameWithUnpairedSurrogate = "filename" + (char)i;
+            var expected = !RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+            string fileNameWithUnpairedSurrogate = (char)i+"filename" ;
             var actual = FileWriteAsserter.TryWriteFileToTempDirectory(fileNameWithUnpairedSurrogate);
-            Assert.That(actual, Is.True, $"Expected the low surrogate {i:X4} to be valid to use in filenames.");
+            Assert.That(actual, Is.EqualTo(expected), $"Expected the low surrogate {i:X4} to be valid to use in filenames.");
         }
     }
 }
