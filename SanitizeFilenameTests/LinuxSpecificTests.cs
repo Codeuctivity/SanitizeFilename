@@ -62,7 +62,7 @@ namespace SanitizeFilenameTests
         public void LowSurrogatesShouldFailToBeUsedAsFileNameOnLinux(int i)
         {
             var expected = !RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-            string fileNameWithUnpairedSurrogate = (char)i+"filename" ;
+            string fileNameWithUnpairedSurrogate = (char)i + "filename";
             var actual = FileWriteAsserter.TryWriteFileToTempDirectory(fileNameWithUnpairedSurrogate);
             Assert.That(actual, Is.EqualTo(expected), $"Expected the low surrogate {i:X4} to be valid to use in filenames.");
         }
