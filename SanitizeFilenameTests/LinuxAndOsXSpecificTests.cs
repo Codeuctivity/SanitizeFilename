@@ -57,7 +57,6 @@ namespace SanitizeFilenameTests
             Assert.That(actual, $"Expected the high surrogate {i:X4} to be sanitized.");
         }
 
-
         [Test, TestCaseSource(nameof(LowSurrogateRange))]
         public void LowSurrogatesShouldFailToBeUsedAsFileNameOnLinux(int i)
         {
@@ -66,7 +65,6 @@ namespace SanitizeFilenameTests
             var actual = FileWriteAsserter.TryWriteFileToTempDirectory(fileNameWithUnpairedSurrogate);
             Assert.That(actual, Is.EqualTo(expected), $"Expected the low surrogate {i:X4} to be valid to use in filenames.");
         }
-
 
         [Test, TestCaseSource(nameof(HighSurrogateRange))]
         public void LowSurrogatesShouldBeSanitized(int i)
