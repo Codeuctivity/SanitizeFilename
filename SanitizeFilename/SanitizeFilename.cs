@@ -166,8 +166,45 @@ namespace Codeuctivity
                 filename = filename.Replace(invalidChar.ToString(), replacement, StringComparison.Ordinal);
 
             filename = ReplaceInvalidUnicodeChars(filename, replacement);
+            filename = RemoveUnpairedSurrogates(filename);
 
             return filename;
+        }
+        /// <summary>
+        /// Removes unpaired surrogates from a string (Ubuntu does not like that)
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static string RemoveUnpairedSurrogates(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            var result = new StringBuilder();
+
+            for (int i = 0; i < input.Length; i++)
+            {
+                if (char.IsHighSurrogate(input[i]) && (i < input.Length - 1 && char.IsLowSurrogate(input[i + 1])))
+                {
+                    // High surrogate is followed by a low surrogate
+                    result.Append(input[i]);
+                    result.Append(input[i + 1]);
+                    // Skip the next character
+                    i++;
+                }
+                else if (char.IsLowSurrogate(input[i]) && (i > 0 && char.IsHighSurrogate(input[i - 1])))
+                {
+                    // Low surrogate is preceded by a high surrogate
+                    result.Append(input[i]);
+                }
+                else if (!char.IsSurrogate(input[i]))
+                {
+                    // Not a surrogate
+                    result.Append(input[i]);
+                }
+            }
+
+            return result.ToString();
         }
 
         // replace invalid unicode characters with a replacement character (they were failing on github runner using ubuntu)
