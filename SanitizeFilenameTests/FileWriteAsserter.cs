@@ -1,10 +1,12 @@
-﻿namespace SanitizeFilenameTests
+﻿using System.Security.Cryptography;
+
+namespace SanitizeFilenameTests
 {
     public class FileWriteAsserter
     {
         public FileWriteAsserter()
         {
-            TempPath = Path.Combine(Path.GetTempPath(), "test");
+            TempPath = Path.Combine(Path.GetTempPath(), "test" + Guid.NewGuid());
             if (!Directory.Exists(TempPath))
                 Directory.CreateDirectory(TempPath);
         }
