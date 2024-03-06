@@ -10,6 +10,13 @@ namespace SanitizeFilenameTests
             FileWriteAsserter = new FileWriteAsserter();
         }
 
+        [OneTimeTearDown]
+        public void TearDown()
+        {
+            if (Directory.Exists(FileWriteAsserter.TempPath))
+                Directory.Delete(FileWriteAsserter.TempPath, true);
+        }
+
         public static IEnumerable<int> HighSurrogateRange
         {
             get
@@ -31,6 +38,7 @@ namespace SanitizeFilenameTests
                 }
             }
         }
+        public FileWriteAsserter FileWriteAsserter { get; }
 
         [Test, TestCaseSource(nameof(HighSurrogateRange))]
         public void HighSurrogatesShouldFailToBeUsedAsFileNameOnLinuxOrOsX(int i)
@@ -40,7 +48,6 @@ namespace SanitizeFilenameTests
             var actual = FileWriteAsserter.TryWriteFileToTempDirectory(fileNameWithUnpairedSurrogate);
             Assert.That(actual, Is.EqualTo(expected), $"Expected the unpaired high surrogate {i:X4} to be valid to use in filenames.");
         }
-        public FileWriteAsserter FileWriteAsserter { get; }
 
         [Test, TestCaseSource(nameof(HighSurrogateRange))]
         public void HighSurrogatesShouldBeSanitized(int i)

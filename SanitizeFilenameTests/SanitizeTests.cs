@@ -99,6 +99,7 @@ namespace SanitizeFilenameTests
             }
         }
 
+        // This test will run some minutes, depending on your system performance (6 min on my machine)
         [Test]
         public void ShouldIterateOverEveryUnicodeCodePoint()
         {
@@ -154,9 +155,8 @@ namespace SanitizeFilenameTests
 
         [Test]
         [TestCase("a", 300, "a", 255)]
-        // Not compatible to ext4 but works on NTFS
-        //[TestCase("👩🏽‍🚒", 248, "👩🏽‍🚒", 255)]
         // Fitting to ext4 using UTF-8 filenames
+        // https://emojipedia.org/woman-firefighter-medium-skin-tone#technical
         [TestCase("👩🏽‍🚒", 240, "👩🏽‍🚒", 247)]
         [TestCase("👩🏽‍🚒", 241, "a", 241)]
         public void ShouldTruncateLongFileNamesPreserveUnicodeTextElements(string testSuffix, int countOfFillingAChars, string expectedEnd, int expectedSanitizedLength)

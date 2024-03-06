@@ -50,5 +50,37 @@ namespace SanitizeFilenameTests
                 }
             }
         }
+
+        [Test]
+        public void MacOsDoesNotSupportToWriteNotAssignedCodepointsWithSurrogates()
+        {
+            // https://unicodelookup.com/#423939/1
+            var onOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs = 423939;
+            string unicodeString = char.ConvertFromUtf32(onOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs);
+            var expected = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+            var filenameInvalidOnMacOs = "valid" + unicodeString + "filename" + onOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs;
+            var actual = FileWriteAsserter.TryWriteFileToTempDirectory(filenameInvalidOnMacOs);
+            Assert.That(actual, Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void ShouldSanitizeNotAssignedCodepointWithSurrogates()
+        {
+            // https://unicodelookup.com/#423939/1  u+67803
+            var oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs = 423939;
+            var sanitizedFilenames = new List<(string, int)>();
+            string unicodeString = char.ConvertFromUtf32(oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs);
+            var mightBeValid = "valid" + unicodeString + "filename" + oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs;
+
+            var sanitizedFilename = mightBeValid.SanitizeFilename();
+            Assert.That(sanitizedFilename, Is.Not.EqualTo(mightBeValid));
+
+            lock (sanitizedFilenames)
+            {
+                sanitizedFilenames.Add((sanitizedFilename, oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs));
+            }
+
+            FileWriteAsserter.AssertCollection(sanitizedFilenames);
+        }
     }
 }

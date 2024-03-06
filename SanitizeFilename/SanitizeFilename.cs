@@ -166,41 +166,51 @@ namespace Codeuctivity
                 filename = filename.Replace(invalidChar.ToString(), replacement, StringComparison.Ordinal);
 
             filename = ReplaceInvalidUnicodeChars(filename, replacement);
-            filename = RemoveUnpairedSurrogates(filename);
+            filename = RemoveUnpairedSurrogates(filename, replacement);
 
             return filename;
         }
+
         /// <summary>
         /// Removes unpaired surrogates from a string (Ubuntu does not like that)
         /// </summary>
         /// <param name="input"></param>
+        /// <param name="replacement"></param>
         /// <returns></returns>
-        public static string RemoveUnpairedSurrogates(string input)
+        public static string RemoveUnpairedSurrogates(string input, string replacement)
         {
             if (string.IsNullOrEmpty(input))
                 return input;
 
             var result = new StringBuilder();
 
-            for (int i = 0; i < input.Length; i++)
+            var enumerator = StringInfo.GetTextElementEnumerator(input);
+            while (enumerator.MoveNext())
             {
-                if (char.IsHighSurrogate(input[i]) && (i < input.Length - 1 && char.IsLowSurrogate(input[i + 1])))
+                var element = enumerator.GetTextElement();
+                if (element != null && element.Length > 1 && char.IsSurrogatePair(element[0], element[1]))
                 {
-                    // High surrogate is followed by a low surrogate
-                    result.Append(input[i]);
-                    result.Append(input[i + 1]);
-                    // Skip the next character
-                    i++;
+                    var elementContainsOtherNotAssigned = element.Any(c =>
+                    {
+                        UnicodeCategory unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
+                        bool v = unicodeCategory == UnicodeCategory.OtherNotAssigned;
+                        return v;
+                    });
+                    var category = CharUnicodeInfo.GetUnicodeCategory(element, 0);
+
+                    // Check for Undefined Character
+                    if (category != UnicodeCategory.OtherNotAssigned)
+                    {
+                        result.Append(element);
+                    }
+                    else
+                    {
+                        result.Append(replacement);
+                    }
                 }
-                else if (char.IsLowSurrogate(input[i]) && (i > 0 && char.IsHighSurrogate(input[i - 1])))
+                else
                 {
-                    // Low surrogate is preceded by a high surrogate
-                    result.Append(input[i]);
-                }
-                else if (!char.IsSurrogate(input[i]))
-                {
-                    // Not a surrogate
-                    result.Append(input[i]);
+                    result.Append(element);
                 }
             }
 
@@ -229,7 +239,8 @@ namespace Codeuctivity
 
         private static bool IsUnassignedUnicodeCodePoint(char c)
         {
-            UnicodeCategory category = CharUnicodeInfo.GetUnicodeCategory(c);
+            var category = CharUnicodeInfo.GetUnicodeCategory(c);
+            // Undefined Character
             return category == UnicodeCategory.OtherNotAssigned;
         }
 

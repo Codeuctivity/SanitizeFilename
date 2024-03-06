@@ -38,3 +38,4 @@ Restrictions of Windwos, Linux and MacOs are alle combined to an replacemant pat
 | Max length others                |                              |                         |                    |
 | Unpaired surrogates              |                              |                         |                    |
 | UnicodeCategory.OtherNotAssigned |                              |                         |                    |
+| OtherNotAssigned surrogates      | MacOs                        | Linux, Windows          | u+67803 , ...      |
