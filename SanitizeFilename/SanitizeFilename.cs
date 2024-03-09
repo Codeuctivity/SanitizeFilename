@@ -191,7 +191,7 @@ namespace Codeuctivity
             return validChars.ToString();
         }
 
-      
+
 
         /// <summary>
         /// Removes unpaired surrogates from a string (some systems dont support unpaired surrogates for filenames)
