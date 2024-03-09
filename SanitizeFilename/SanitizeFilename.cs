@@ -165,14 +165,13 @@ namespace Codeuctivity
             foreach (var invalidChar in usedInvalidChars)
                 filename = filename.Replace(invalidChar.ToString(), replacement, StringComparison.Ordinal);
 
-            filename = ReplaceInvalidUnicodeChars(filename, replacement);
             filename = RemoveUnpairedSurrogates(filename, replacement);
 
             return filename;
         }
 
         /// <summary>
-        /// Removes unpaired surrogates from a string (Ubuntu does not like that)
+        /// Removes unpaired surrogates from a string (some systems dont support unpaired surrogates for filenames)
         /// </summary>
         /// <param name="input"></param>
         /// <param name="replacement"></param>
@@ -183,63 +182,50 @@ namespace Codeuctivity
                 return input;
 
             var result = new StringBuilder();
-
             var enumerator = StringInfo.GetTextElementEnumerator(input);
+
             while (enumerator.MoveNext())
             {
                 var element = enumerator.GetTextElement();
-                if (element != null && element.Length > 1 && char.IsSurrogatePair(element[0], element[1]))
-                {
-                    var elementContainsOtherNotAssigned = element.Any(c =>
-                    {
-                        UnicodeCategory unicodeCategory = CharUnicodeInfo.GetUnicodeCategory(c);
-                        bool v = unicodeCategory == UnicodeCategory.OtherNotAssigned;
-                        return v;
-                    });
-                    var category = CharUnicodeInfo.GetUnicodeCategory(element, 0);
 
-                    // Check for Undefined Character
-                    if (category != UnicodeCategory.OtherNotAssigned)
-                    {
-                        result.Append(element);
-                    }
-                    else
+                // No surrogate
+                if (element != null && !char.IsLowSurrogate(element[0]) && !char.IsHighSurrogate(element[0]))
+                {
+                    if (IsUnassignedUnicodeCodePoint(element))
                     {
                         result.Append(replacement);
                     }
+                    else
+                    {
+                        result.Append(element);
+                    }
                 }
+                // Paired surrogate
+                else if (element != null && element.Length > 1 && char.IsSurrogatePair(element[0], element[1]))
+                {
+                    // Check for Undefined Character
+                    if (IsUnassignedUnicodeCodePoint(element))
+                    {
+                        result.Append(replacement);
+                    }
+                    else
+                    {
+                        result.Append(element);
+                    }
+                }
+                // Unpaired surrogate
                 else
                 {
-                    result.Append(element);
+                    result.Append(replacement);
                 }
             }
 
             return result.ToString();
         }
 
-        // replace invalid unicode characters with a replacement character (they were failing on github runner using ubuntu)
-        private static string ReplaceInvalidUnicodeChars(string input, string replacement)
+        private static bool IsUnassignedUnicodeCodePoint(string c)
         {
-            var validChars = new StringBuilder();
-
-            foreach (char c in input)
-            {
-                if (IsUnassignedUnicodeCodePoint(c))
-                {
-                    validChars.Append(replacement);
-                }
-                else
-                {
-                    validChars.Append(c);
-                }
-            }
-
-            return validChars.ToString();
-        }
-
-        private static bool IsUnassignedUnicodeCodePoint(char c)
-        {
-            var category = CharUnicodeInfo.GetUnicodeCategory(c);
+            var category = CharUnicodeInfo.GetUnicodeCategory(c, 0);
             // Undefined Character
             return category == UnicodeCategory.OtherNotAssigned;
         }

@@ -41,7 +41,7 @@ namespace SanitizeFilenameTests
         public FileWriteAsserter FileWriteAsserter { get; }
 
         [Test, TestCaseSource(nameof(HighSurrogateRange))]
-        public void HighSurrogatesShouldFailToBeUsedAsFileNameOnLinuxOrOsX(int i)
+        public void HighSurrogatesShouldFailToBeUsedAsFileNameOnLinuxAndOsX(int i)
         {
             var expected = !(RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX));
             string fileNameWithUnpairedSurrogate = "filename" + (char)i;
@@ -53,12 +53,14 @@ namespace SanitizeFilenameTests
         public void HighSurrogatesShouldBeSanitized(int i)
         {
             string fileNameWithUnpairedSurrogate = "filename" + (char)i;
-            var actual = FileWriteAsserter.TryWriteFileToTempDirectory(fileNameWithUnpairedSurrogate.SanitizeFilename());
-            Assert.That(actual, $"Expected the unpaired high surrogate {i:X4} to be sanitized.");
+            string sanitizedFilenameWithoutUnpairedSurrogate = fileNameWithUnpairedSurrogate.SanitizeFilename();
+            var actual = FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilenameWithoutUnpairedSurrogate);
+            Assert.That(actual, $"Expected the unpaired high surrogate {i:X4} to be sanitized and usable on any OS.");
+            Assert.That(fileNameWithUnpairedSurrogate, Is.Not.EqualTo(sanitizedFilenameWithoutUnpairedSurrogate));
         }
 
         [Test, TestCaseSource(nameof(LowSurrogateRange))]
-        public void LowSurrogatesShouldFailToBeUsedAsFileNameOnLinux(int i)
+        public void LowSurrogatesShouldFailToBeUsedAsFileNameOnLinuxAndOsX(int i)
         {
             var expected = !(RuntimeInformation.IsOSPlatform(OSPlatform.Linux) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX));
             string fileNameWithUnpairedSurrogate = (char)i + "filename";
@@ -70,8 +72,10 @@ namespace SanitizeFilenameTests
         public void LowSurrogatesShouldBeSanitized(int i)
         {
             string fileNameWithUnpairedSurrogate = (char)i + "filename";
-            var actual = FileWriteAsserter.TryWriteFileToTempDirectory(fileNameWithUnpairedSurrogate.SanitizeFilename());
-            Assert.That(actual, $"Expected the unpaired low surrogate {i:X4} to be sanitized.");
+            string sanitizedFilenameWithoutUnpairedSurrogate = fileNameWithUnpairedSurrogate.SanitizeFilename();
+            var actual = FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilenameWithoutUnpairedSurrogate);
+            Assert.That(actual, $"Expected the unpaired low surrogate {i:X4} to be sanitized and usable on any OS.");
+            Assert.That(fileNameWithUnpairedSurrogate, Is.Not.EqualTo(sanitizedFilenameWithoutUnpairedSurrogate));
         }
     }
 }
