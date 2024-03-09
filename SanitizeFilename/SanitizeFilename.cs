@@ -227,7 +227,7 @@ namespace Codeuctivity
                 else if (element != null && element.Length > 1 && char.IsSurrogatePair(element[0], element[1]))
                 {
                     // Check for Undefined Character
-                    if (IsUnassignedUnicodeCodePoint(element) || IsSurrogate(element))
+                    if (IsUnassignedUnicodeCodePoint(element))
                     {
                         result.Append(replacement);
                     }

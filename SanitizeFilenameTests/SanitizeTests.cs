@@ -154,6 +154,7 @@ namespace SanitizeFilenameTests
         }
 
         [Test]
+        [TestCase("👩🏽‍🚒", 0, "👩🏽‍🚒", 7)]
         [TestCase("a", 300, "a", 255)]
         // Fitting to ext4 using UTF-8 filenames
         // https://emojipedia.org/woman-firefighter-medium-skin-tone#technical
