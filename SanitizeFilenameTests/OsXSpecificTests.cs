@@ -4,9 +4,9 @@ using System.Runtime.InteropServices;
 
 namespace SanitizeFilenameTests
 {
-    internal class MacOsSpecificTests
+    internal class OsXSpecificTests
     {
-        public MacOsSpecificTests()
+        public OsXSpecificTests()
         {
             FileWriteAsserter = new FileWriteAsserter();
         }
@@ -19,6 +19,16 @@ namespace SanitizeFilenameTests
         }
 
         public FileWriteAsserter FileWriteAsserter { get; }
+
+        [Test, TestCaseSource(typeof(SanitizeFilename), nameof(SanitizeFilename.InvalidCharsInMacOsFileNames))]
+        public void ShouldSanitizeOsXSpecificInvalidChars(int i)
+        {
+            string fileNameOsXSpecificException = "filename" + (char)i;
+            string sanitizedFileNameOsXSpecificException = fileNameOsXSpecificException.SanitizeFilename();
+            var actual = FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFileNameOsXSpecificException);
+            Assert.That(actual, $"Expected the fileNameOsXSpecificException {i:X4} to be sanitized and usable on any OS.");
+            Assert.That(fileNameOsXSpecificException, Is.Not.EqualTo(sanitizedFileNameOsXSpecificException));
+        }
 
         [Test, TestCaseSource(typeof(SanitizeFilename), nameof(SanitizeFilename.InvalidCharsInMacOsFileNames))]
         public void ShouldBehaviorOsDependentOnWritingFilenameWithKnownOsXSpecificExceptions(char invalidOnMacOs)
