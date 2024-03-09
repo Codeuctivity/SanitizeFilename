@@ -165,10 +165,33 @@ namespace Codeuctivity
             foreach (var invalidChar in usedInvalidChars)
                 filename = filename.Replace(invalidChar.ToString(), replacement, StringComparison.Ordinal);
 
+            filename = ReplaceInvalidUnicodeChars(filename, replacement);
             filename = RemoveUnpairedSurrogates(filename, replacement);
 
             return filename;
         }
+
+        // replace invalid unicode characters with a replacement character (they were failing on github runner using ubuntu)
+        private static string ReplaceInvalidUnicodeChars(string input, string replacement)
+        {
+            var validChars = new StringBuilder();
+
+            foreach (char c in input)
+            {
+                if (IsUnassignedUnicodeCodePoint(c))
+                {
+                    validChars.Append(replacement);
+                }
+                else
+                {
+                    validChars.Append(c);
+                }
+            }
+
+            return validChars.ToString();
+        }
+
+      
 
         /// <summary>
         /// Removes unpaired surrogates from a string (some systems dont support unpaired surrogates for filenames)
@@ -189,7 +212,7 @@ namespace Codeuctivity
                 var element = enumerator.GetTextElement();
 
                 // No surrogate
-                if (element != null && !char.IsLowSurrogate(element[0]) && !char.IsHighSurrogate(element[0]))
+                if (element != null && !IsSurrogate(element))
                 {
                     if (IsUnassignedUnicodeCodePoint(element))
                     {
@@ -204,7 +227,7 @@ namespace Codeuctivity
                 else if (element != null && element.Length > 1 && char.IsSurrogatePair(element[0], element[1]))
                 {
                     // Check for Undefined Character
-                    if (IsUnassignedUnicodeCodePoint(element))
+                    if (IsUnassignedUnicodeCodePoint(element) || IsSurrogate(element))
                     {
                         result.Append(replacement);
                     }
@@ -223,11 +246,25 @@ namespace Codeuctivity
             return result.ToString();
         }
 
-        private static bool IsUnassignedUnicodeCodePoint(string c)
+        private static bool IsUnassignedUnicodeCodePoint(char c)
         {
-            var category = CharUnicodeInfo.GetUnicodeCategory(c, 0);
+            var category = CharUnicodeInfo.GetUnicodeCategory(c);
             // Undefined Character
             return category == UnicodeCategory.OtherNotAssigned;
+        }
+
+        private static bool IsUnassignedUnicodeCodePoint(string c)
+        {
+            var category = CharUnicodeInfo.GetUnicodeCategory(c, c.Length - 1);
+            // Undefined Character
+            return category == UnicodeCategory.OtherNotAssigned;
+        }
+
+        private static bool IsSurrogate(string c)
+        {
+            var category = CharUnicodeInfo.GetUnicodeCategory(c, c.Length - 1);
+            // Undefined Character
+            return category == UnicodeCategory.Surrogate;
         }
 
         private static string InternalSanitizeReservedFileNames(string filename, string replacement)

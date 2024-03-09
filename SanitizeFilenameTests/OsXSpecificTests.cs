@@ -30,6 +30,16 @@ namespace SanitizeFilenameTests
             Assert.That(fileNameOsXSpecificException, Is.Not.EqualTo(sanitizedFileNameOsXSpecificException));
         }
 
+        [Test]
+        public void ShouldSanitizeOsXSpecificInvalidChar()
+        {
+            string fileNameOsXSpecificException = "filename" + char.ConvertFromUtf32(69375);
+            string sanitizedFileNameOsXSpecificException = fileNameOsXSpecificException.SanitizeFilename();
+            var actual = FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFileNameOsXSpecificException);
+            Assert.That(actual);
+            Assert.That(fileNameOsXSpecificException, Is.Not.EqualTo(sanitizedFileNameOsXSpecificException));
+        }
+
         [Test, TestCaseSource(typeof(SanitizeFilename), nameof(SanitizeFilename.InvalidCharsInMacOsFileNames))]
         public void ShouldBehaviorOsDependentOnWritingFilenameWithKnownOsXSpecificExceptions(char invalidOnMacOs)
         {
