@@ -83,24 +83,24 @@ namespace SanitizeFilenameTests
             Assert.That(actual, Is.EqualTo(expected));
         }
 
-        //[Test]
-        //public void ShouldSanitizeNotAssignedCodepointWithSurrogates()
-        //{
-        //    // https://unicodelookup.com/#423939/1  u+67803
-        //    var oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs = 423939;
-        //    var sanitizedFilenames = new List<(string, int)>();
-        //    string unicodeString = char.ConvertFromUtf32(oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs);
-        //    var mightBeValid = "valid" + unicodeString + "filename" + oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs;
+        [Test]
+        public void ShouldSanitizeValidSurrogatesWithoutFollowingCodepoint()
+        {
+            // https://unicodelookup.com/#557056/1  
+            var oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs = 557056;
+            var sanitizedFilenames = new List<(string, int)>();
+            string unicodeString = char.ConvertFromUtf32(oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs);
+            var mightBeValid = "valid" + unicodeString + "filename" + oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs;
 
-        //    var sanitizedFilename = mightBeValid.SanitizeFilename();
-        //    Assert.That(sanitizedFilename, Is.Not.EqualTo(mightBeValid));
+            var sanitizedFilename = mightBeValid.SanitizeFilename();
+            Assert.That(sanitizedFilename, Is.Not.EqualTo(mightBeValid));
 
-        //    lock (sanitizedFilenames)
-        //    {
-        //        sanitizedFilenames.Add((sanitizedFilename, oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs));
-        //    }
+            lock (sanitizedFilenames)
+            {
+                sanitizedFilenames.Add((sanitizedFilename, oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs));
+            }
 
-        //    FileWriteAsserter.AssertCollection(sanitizedFilenames);
-        //}
+            FileWriteAsserter.AssertCollection(sanitizedFilenames);
+        }
     }
 }

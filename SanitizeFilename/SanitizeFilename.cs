@@ -165,7 +165,7 @@ namespace Codeuctivity
             foreach (var invalidChar in usedInvalidChars)
                 filename = filename.Replace(invalidChar.ToString(), replacement, StringComparison.Ordinal);
 
-            filename = ReplaceInvalidUnicodeChars(filename, replacement);
+            //filename = ReplaceInvalidUnicodeChars(filename, replacement);
             filename = RemoveUnpairedSurrogates(filename, replacement);
 
             return filename;
@@ -224,7 +224,7 @@ namespace Codeuctivity
                     }
                 }
                 // Paired surrogate
-                else if (element != null && element.Length > 1 && char.IsSurrogatePair(element[0], element[1]))
+                else if (element != null && element.Length > 2 && char.IsSurrogatePair(element[0], element[1]))
                 {
                     // Check for Undefined Character
                     if (IsUnassignedUnicodeCodePoint(element))
