@@ -171,28 +171,6 @@ namespace Codeuctivity
             return filename;
         }
 
-        // replace invalid unicode characters with a replacement character (they were failing on github runner using ubuntu)
-        private static string ReplaceInvalidUnicodeChars(string input, string replacement)
-        {
-            var validChars = new StringBuilder();
-
-            foreach (char c in input)
-            {
-                if (IsUnassignedUnicodeCodePoint(c))
-                {
-                    validChars.Append(replacement);
-                }
-                else
-                {
-                    validChars.Append(c);
-                }
-            }
-
-            return validChars.ToString();
-        }
-
-
-
         /// <summary>
         /// Removes unpaired surrogates from a string (some systems dont support unpaired surrogates for filenames)
         /// </summary>

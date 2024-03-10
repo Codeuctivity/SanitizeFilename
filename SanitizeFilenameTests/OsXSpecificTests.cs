@@ -90,17 +90,10 @@ namespace SanitizeFilenameTests
             var oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs = 557056;
             var sanitizedFilenames = new List<(string, int)>();
             string unicodeString = char.ConvertFromUtf32(oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs);
-            var mightBeValid = "valid" + unicodeString + "filename" + oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs;
-
-            var sanitizedFilename = mightBeValid.SanitizeFilename();
-            Assert.That(sanitizedFilename, Is.Not.EqualTo(mightBeValid));
-
-            lock (sanitizedFilenames)
-            {
-                sanitizedFilenames.Add((sanitizedFilename, oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs));
-            }
-
-            FileWriteAsserter.AssertCollection(sanitizedFilenames);
+            var expected = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+            var filenameInvalidOnMacOs = "valid" + unicodeString + "filename" + oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs;
+            var actual = FileWriteAsserter.TryWriteFileToTempDirectory(filenameInvalidOnMacOs);
+            Assert.That(actual, Is.EqualTo(expected));
         }
     }
 }
