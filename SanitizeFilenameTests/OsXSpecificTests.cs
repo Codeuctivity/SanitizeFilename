@@ -31,9 +31,11 @@ namespace SanitizeFilenameTests
         }
 
         [Test]
-        public void ShouldSanitizeOsXSpecificInvalidChar()
+        [TestCase(73474)]
+        [TestCase(69375)]
+        public void ShouldSanitizeOsXSpecificInvalidChar(int unicodeOnlyFailingOnOsX)
         {
-            string fileNameOsXSpecificException = "filename" + char.ConvertFromUtf32(69375);
+            string fileNameOsXSpecificException = "filename" + char.ConvertFromUtf32(unicodeOnlyFailingOnOsX);
             string sanitizedFileNameOsXSpecificException = fileNameOsXSpecificException.SanitizeFilename();
             var actual = FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFileNameOsXSpecificException);
             Assert.That(actual);
