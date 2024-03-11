@@ -65,13 +65,14 @@ namespace Codeuctivity
         ];
 
         /// <summary>
-        /// Chars that trigger an System.IO.IOException: 'Illegal byte sequence' on MacOs, these are all in the UnicodeCategory.OtherNotAssigned category (with two exceptions), see https://docs.microsoft.com/en-us/dotnet/api/system.globalization.unicodecategory
+        /// CodePoints proven to fail to be used on OsX github runner for filenames
         /// </summary>
         public static readonly int[] InvalidCodePointInOsXFileNames = [
-            //NonSpacingMark
+            // U+0ECE Lao Yamakkan https://codepoints.net/U+00ECE?lang=en
             3790,
-            //SpacingCombiningMark
+            // U+0CF3 Kannada Sign Combining Anusvara Above Right https://codepoints.net/U+00CF3?lang=en
             3315,
+            // U+11F02 Kawi Sign Repha https://codepoints.net/U+11F02?lang=en
             73474,
         ];
 
