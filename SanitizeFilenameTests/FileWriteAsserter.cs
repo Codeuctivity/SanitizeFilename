@@ -1,19 +1,52 @@
-﻿
+﻿using System.Security.Cryptography;
+
 namespace SanitizeFilenameTests
 {
     public class FileWriteAsserter
     {
-        public static bool TryWriteFileToTempDirectory(string filename)
+        public FileWriteAsserter()
         {
+            TempPath = Path.Combine(Path.GetTempPath(), "test" + Guid.NewGuid());
+            if (!Directory.Exists(TempPath))
+                Directory.CreateDirectory(TempPath);
+        }
+
+        public string TempPath { get; }
+
+        internal void AssertCollection(List<(string, int)> validFilenames)
+        {
+            var invalidFilenames = new List<(string, int)>();
+
+            Parallel.ForEach(validFilenames, validFilename =>
+            {
+                if (!TryWriteFileToTempDirectory(validFilename.Item1))
+                {
+                    lock (invalidFilenames)
+                    {
+                        invalidFilenames.Add(validFilename);
+                    }
+                }
+            });
+
+            //invalidFilenames.Add(("test", 1));
+            //invalidFilenames.Add(("test", 2));
+
+            Assert.That(invalidFilenames.OrderBy(x => x.Item2), Is.Empty, GenerateAssertionMessage(invalidFilenames));
+        }
+
+        public bool TryWriteFileToTempDirectory(string filename)
+        {
+            var filePath = Path.Combine(TempPath, filename);
+
             try
             {
-                var tempPath = Path.Combine(Path.GetTempPath(), "test");
-                if (!Directory.Exists(tempPath))
-                    Directory.CreateDirectory(tempPath);
+                File.WriteAllText(filePath, "a");
 
-                var filePath = Path.Combine(tempPath, filename);
-                File.WriteAllText(filePath, "test");
-                return true;
+                var fileExists = IsFileWithNameFound(filename);
+
+                if (fileExists)
+                    File.Delete(filePath);
+                return fileExists;
             }
             catch (Exception)
             {
@@ -21,21 +54,11 @@ namespace SanitizeFilenameTests
             }
         }
 
-        internal static void AssertCollection(List<(string, int)> validFilenames)
+        public bool IsFileWithNameFound(string filename)
         {
-            var invalidFilenames = new List<(string, int)>();
-            foreach (var validFilename in validFilenames)
-            {
-                if (!TryWriteFileToTempDirectory(validFilename.Item1))
-                {
-                    invalidFilenames.Add(validFilename);
-                }
-            }
+            string[] allFiles = Directory.GetFiles(TempPath);
 
-            //invalidFilenames.Add(("test", 1));
-            //invalidFilenames.Add(("test", 2));
-
-            Assert.That(invalidFilenames.Count, Is.Zero, GenerateAssertionMessage(invalidFilenames));
+            return allFiles.SingleOrDefault(x => x.EndsWith(filename)) != null;
         }
 
         private static string GenerateAssertionMessage(List<(string, int)> invalidFilenames)
