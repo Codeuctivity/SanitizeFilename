@@ -62,7 +62,6 @@ namespace Codeuctivity
             (char)29,
             (char)30,
             (char)31,
-
         ];
 
         /// <summary>
@@ -222,13 +221,6 @@ namespace Codeuctivity
             return result.ToString();
         }
 
-        private static bool IsUnassignedUnicodeCodePoint(char c)
-        {
-            var category = CharUnicodeInfo.GetUnicodeCategory(c);
-            // Undefined Character
-            return category == UnicodeCategory.OtherNotAssigned;
-        }
-
         private static bool IsUnassignedUnicodeCodePoint(string c)
         {
             var category = CharUnicodeInfo.GetUnicodeCategory(c, c.Length - 1);
@@ -239,7 +231,6 @@ namespace Codeuctivity
         private static bool IsSurrogate(string c)
         {
             var category = CharUnicodeInfo.GetUnicodeCategory(c, c.Length - 1);
-            // Undefined Character
             return category == UnicodeCategory.Surrogate;
         }
 
