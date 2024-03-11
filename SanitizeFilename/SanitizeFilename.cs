@@ -68,17 +68,13 @@ namespace Codeuctivity
         /// <summary>
         /// Chars that trigger an System.IO.IOException: 'Illegal byte sequence' on MacOs, these are all in the UnicodeCategory.OtherNotAssigned category (with two exceptions), see https://docs.microsoft.com/en-us/dotnet/api/system.globalization.unicodecategory
         /// </summary>
-        public static readonly char[] InvalidCharsInMacOsFileNames = [
+        public static readonly int[] InvalidCodePointInOsXFileNames = [
             //NonSpacingMark
-            (char)3790,
+            3790,
             //SpacingCombiningMark
-            (char)3315,
+            3315,
+            73474,
         ];
-
-        /// <summary>
-        /// Chars that are invalid in Windows and MacOs file names
-        /// </summary>
-        public static readonly char[] InvalidCharsInWindowsAndMacOsFileNames = [.. InvalidCharsInWindowsFileNames, .. InvalidCharsInMacOsFileNames];
 
         /// <summary>
         /// These chars are invalid in Windows file names
@@ -133,7 +129,7 @@ namespace Codeuctivity
             if (InvalidCharsInWindowsFileNames.Contains(replacement))
                 throw new ArgumentException($"Replacement '{replacement}' is invalid for Windows", nameof(replacement));
 
-            if (InvalidCharsInMacOsFileNames.Contains(replacement))
+            if (InvalidCodePointInOsXFileNames.Any(c => char.ConvertFromUtf32(c).Contains(replacement, StringComparison.InvariantCulture)))
                 throw new ArgumentException($"Replacement '{replacement}' is invalid for MacOs", nameof(replacement));
         }
 
@@ -144,7 +140,7 @@ namespace Codeuctivity
 
         private static string InternalSanitize(string filename, string replacement)
         {
-            var invalidCharsFileNamesSanitized = InternalSanitizeChars(filename, replacement, InvalidCharsInWindowsAndMacOsFileNames);
+            var invalidCharsFileNamesSanitized = InternalSanitizeChars(filename, replacement, InvalidCharsInWindowsFileNames, InvalidCodePointInOsXFileNames);
             var reservedFileNamesSanitized = InternalSanitizeReservedFileNames(invalidCharsFileNamesSanitized, $"{replacement}");
             var reservedFileNamePrefixSanitized = InternalSanitizeReservedFileNamePrefix(reservedFileNamesSanitized, $"{replacement}");
             var trailingCharSanitized = RemoveTrailingPeriodOrSpace(reservedFileNamePrefixSanitized, $"{replacement}");
@@ -158,14 +154,16 @@ namespace Codeuctivity
             return InternalSanitize(trailingCharSanitized, replacement);
         }
 
-        private static string InternalSanitizeChars(string filename, string replacement, char[]? invalidChars = null)
+        private static string InternalSanitizeChars(string filename, string replacement, char[]? invalidChars = null, int[]? invalidCodePoints = null)
         {
             var usedInvalidChars = invalidChars ?? Path.GetInvalidFileNameChars();
 
             foreach (var invalidChar in usedInvalidChars)
                 filename = filename.Replace(invalidChar.ToString(), replacement, StringComparison.Ordinal);
 
-            //filename = ReplaceInvalidUnicodeChars(filename, replacement);
+            foreach (var invalidCodePoint in invalidCodePoints ?? [])
+                filename = filename.Replace(char.ConvertFromUtf32(invalidCodePoint), replacement, StringComparison.Ordinal);
+
             filename = RemoveUnpairedSurrogates(filename, replacement);
 
             return filename;

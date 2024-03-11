@@ -20,10 +20,10 @@ namespace SanitizeFilenameTests
 
         public FileWriteAsserter FileWriteAsserter { get; }
 
-        [Test, TestCaseSource(typeof(SanitizeFilename), nameof(SanitizeFilename.InvalidCharsInMacOsFileNames))]
+        [Test, TestCaseSource(typeof(SanitizeFilename), nameof(SanitizeFilename.InvalidCodePointInOsXFileNames))]
         public void ShouldSanitizeOsXSpecificInvalidChars(int i)
         {
-            string fileNameOsXSpecificException = "filename" + (char)i;
+            string fileNameOsXSpecificException = "filename" + char.ConvertFromUtf32(i);
             string sanitizedFileNameOsXSpecificException = fileNameOsXSpecificException.SanitizeFilename();
             var actual = FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFileNameOsXSpecificException);
             Assert.That(actual, $"Expected the fileNameOsXSpecificException {i:X4} to be sanitized and usable on any OS.");
@@ -31,6 +31,7 @@ namespace SanitizeFilenameTests
         }
 
         [Test]
+        // https://codepoints.net/U+11F02?lang=en
         [TestCase(73474)]
         [TestCase(69375)]
         public void ShouldSanitizeOsXSpecificInvalidChar(int unicodeOnlyFailingOnOsX)
@@ -42,11 +43,11 @@ namespace SanitizeFilenameTests
             Assert.That(fileNameOsXSpecificException, Is.Not.EqualTo(sanitizedFileNameOsXSpecificException));
         }
 
-        [Test, TestCaseSource(typeof(SanitizeFilename), nameof(SanitizeFilename.InvalidCharsInMacOsFileNames))]
-        public void ShouldBehaviorOsDependentOnWritingFilenameWithKnownOsXSpecificExceptions(char invalidOnMacOs)
+        [Test, TestCaseSource(typeof(SanitizeFilename), nameof(SanitizeFilename.InvalidCodePointInOsXFileNames))]
+        public void ShouldBehaviorOsDependentOnWritingFilenameWithKnownOsXSpecificExceptions(int invalidOnMacOs)
         {
             var expected = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-            var filenameInvalidOnMacOs = invalidOnMacOs + "Filename.txt";
+            var filenameInvalidOnMacOs = char.ConvertFromUtf32(invalidOnMacOs) + "Filename.txt";
             var actual = FileWriteAsserter.TryWriteFileToTempDirectory(filenameInvalidOnMacOs);
             Assert.That(actual, Is.EqualTo(expected));
         }
@@ -54,17 +55,21 @@ namespace SanitizeFilenameTests
         [Test]
         public void ShouldProofThatThereAreOnlyKnownExceptionsInListOfInvalidUnicodeCodePoints()
         {
-            foreach (var item in SanitizeFilename.InvalidCharsInMacOsFileNames)
+            foreach (var item in SanitizeFilename.InvalidCodePointInOsXFileNames)
             {
                 var category = CharUnicodeInfo.GetUnicodeCategory(item);
 
-                if (item == (char)3315)
+                if (item == 3315)
                 {
                     Assert.That(category, Is.EqualTo(UnicodeCategory.SpacingCombiningMark));
                 }
-                else if (item == (char)3790)
+                else if (item == 3790)
                 {
                     Assert.That(category, Is.EqualTo(UnicodeCategory.NonSpacingMark));
+                }
+                else if (item == 73474)
+                {
+                    Assert.That(category, Is.EqualTo(UnicodeCategory.OtherLetter));
                 }
                 else
                 {
