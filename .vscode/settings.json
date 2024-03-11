@@ -3,5 +3,6 @@
         "bytified",
         "Codeuctivity",
         "Ntfs"
-    ]
+    ],
+    "editor.formatOnSave": true
 }

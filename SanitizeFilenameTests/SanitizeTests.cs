@@ -4,21 +4,18 @@ namespace SanitizeFilenameTests
 {
     public class Tests
     {
-        private string _tempPath;
-
-        [SetUp]
-        public void Setup()
+        public Tests()
         {
-            _tempPath = Path.Combine(Path.GetTempPath(), "test");
-            if (!Directory.Exists(_tempPath))
-                Directory.CreateDirectory(_tempPath);
+            FileWriteAsserter = new FileWriteAsserter();
         }
 
-        [TearDown]
+        public FileWriteAsserter FileWriteAsserter { get; }
+
+        [OneTimeTearDown]
         public void TearDown()
         {
-            if (Directory.Exists(_tempPath))
-                Directory.Delete(_tempPath, true);
+            if (Directory.Exists(FileWriteAsserter.TempPath))
+                Directory.Delete(FileWriteAsserter.TempPath, true);
         }
 
         private static readonly string[] InvalidWindowsFileNames = ["invalid<filename", "invalid>filename", "invalid\"filename", "invalid/filename", "invalid\\filename", "invalid|filename", "invalid?filename", "invalid*filename",];
@@ -102,43 +99,37 @@ namespace SanitizeFilenameTests
             }
         }
 
+        // This test will run some minutes, depending on your system performance (6 min on my machine)
         [Test]
-        public void ShouldUseFilenameWithAnyCharExceptTheExceptions()
+        public void ShouldIterateOverEveryUnicodeCodePoint()
         {
-            var validFilenames = new List<(string, int)>();
+            var sanitizedFilenames = new List<(string, int)>();
 
             // Iterate every UTF16 value
-            for (int i = 0; i <= char.MaxValue; i++)
+            Parallel.For(0, 0x10FFFF + 1, i =>
             {
-                // Unicode chars and chars that are no valid unicode chars
-                char someChar = (char)i;
-                var mightBeValid = "valid" + new string(someChar, 1) + "filename";
+                // Skip surrogate pairs
+                if (i >= 0xD800 && i <= 0xDFFF)
+                    return;
+
+                string unicodeString = char.ConvertFromUtf32(i);
+                var mightBeValid = "valid" + unicodeString + "filename" + i;
 
                 var sanitizedFilename = mightBeValid.SanitizeFilename();
 
-                validFilenames.Add((sanitizedFilename, i));
-            }
+                lock (sanitizedFilenames)
+                {
+                    sanitizedFilenames.Add((sanitizedFilename, i));
+                }
+            });
 
-            FileWriteAsserter.AssertCollection(validFilenames);
+            FileWriteAsserter.AssertCollection(sanitizedFilenames);
         }
 
         [Test]
         [TestCaseSource(nameof(InvalidWindowsFileNames))]
         public void ShouldSanitizeInvalidWindowsFileNames(string invalidFilename)
         {
-            var sanitizedFilename = invalidFilename.SanitizeFilename();
-            Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
-            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
-        }
-
-        [Test]
-        // 0x110000 is the first invalid Unicode character
-        [TestCase(0x110000)]
-        // 55296 is a unpaired surrogate
-        [TestCase(55296)]
-        public void ShouldSanitizeInvalidUnicodeCharacters(int invalidUnicode)
-        {
-            string invalidFilename = (char)invalidUnicode + ".txt";
             var sanitizedFilename = invalidFilename.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidFilename));
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
@@ -163,10 +154,10 @@ namespace SanitizeFilenameTests
         }
 
         [Test]
+        [TestCase("👩🏽‍🚒", 0, "👩🏽‍🚒", 7)]
         [TestCase("a", 300, "a", 255)]
-        // Not compatible to ext4 but works on NTFS
-        //[TestCase("👩🏽‍🚒", 248, "👩🏽‍🚒", 255)]
         // Fitting to ext4 using UTF-8 filenames
+        // https://emojipedia.org/woman-firefighter-medium-skin-tone#technical
         [TestCase("👩🏽‍🚒", 240, "👩🏽‍🚒", 247)]
         [TestCase("👩🏽‍🚒", 241, "a", 241)]
         public void ShouldTruncateLongFileNamesPreserveUnicodeTextElements(string testSuffix, int countOfFillingAChars, string expectedEnd, int expectedSanitizedLength)
