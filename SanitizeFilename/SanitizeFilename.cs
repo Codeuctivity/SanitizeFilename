@@ -68,11 +68,11 @@ namespace Codeuctivity
         /// CodePoints proven to fail to be used on OsX github runner for filenames
         /// </summary>
         public static readonly int[] InvalidCodePointInOsXFileNames = [
-            // U+0ECE Lao Yamakkan https://codepoints.net/U+00ECE?lang=en
+            // U+0ECE Lao Yamakkan https://codepoints.net/U+00ECE
             3790,
-            // U+0CF3 Kannada Sign Combining Anusvara Above Right https://codepoints.net/U+00CF3?lang=en
+            // U+0CF3 Kannada Sign Combining Anusvara Above Right https://codepoints.net/U+00CF3
             3315,
-            // U+11F02 Kawi Sign Repha https://codepoints.net/U+11F02?lang=en
+            // U+11F02 Kawi Sign Repha https://codepoints.net/U+11F02
             73474,
         ];
 

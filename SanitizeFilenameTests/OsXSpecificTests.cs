@@ -33,7 +33,6 @@ namespace SanitizeFilenameTests
         [Test]
         // https://codepoints.net/U+11F02?lang=en
         [TestCase(73474)]
-        // Surrogates that have no code folling their primer fail only on OsX
         [TestCase(69375)]
         public void ShouldSanitizeOsXSpecificInvalidChar(int unicodeOnlyFailingOnOsX)
         {
