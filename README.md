@@ -25,7 +25,7 @@ Console.WriteLine($"SafeFileNameOptionalReplacementChar: {safeFileNameOptionalRe
 
 ## Rules
 
-Restrictions of Windwos, Linux and OsX are alle combined to an replacemant pattern, that will sanitize any filename to be compatible with any of the OS and common filesystem restrictions.
+Restrictions of Windows, Linux and OsX are alle combined to an replacemant pattern, that will sanitize any filename to be compatible with any of the OS and common filesystem restrictions.
 
 | Pattern                          | OS that dont support pattern | OS that support pattern | Example            |
 | -------------------------------- | ---------------------------- | ----------------------- | ------------------ |
