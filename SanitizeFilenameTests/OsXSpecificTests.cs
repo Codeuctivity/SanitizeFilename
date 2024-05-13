@@ -49,7 +49,7 @@ namespace SanitizeFilenameTests
             var expected = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
             var filenameInvalidOnMacOs = char.ConvertFromUtf32(invalidOnMacOs) + "Filename.txt";
             var actual = FileWriteAsserter.TryWriteFileToTempDirectory(filenameInvalidOnMacOs);
-            Assert.That(actual, Is.EqualTo(expected));
+            Assert.That(actual, Is.EqualTo(expected), $"Expected success to write '{invalidOnMacOs}':{expected} but was {actual}");
         }
 
         [Test]
