@@ -37,4 +37,3 @@ Restrictions of Windows, Linux and OsX are alle combined to an replacemant patte
 | Max length                       | Linux, Windows, OsX          |                         | 255 chars          |
 | Unicode surrogates               | OsX, Linux                   | Windows                 | U+D800 - U+DFFF    |
 | NotAssigned to unicode           | OsX                          | Linux, Windows          | U+67803, ...       |
-| Reserved codepoints OsX          | OsX                          | Linux, Windows          | [U+0ECE](https://codepoints.net/U+00ECE?lang=en), [U+0CF3](https://codepoints.net/U+00ECE), [U+11F02](https://codepoints.net/U+11F02) |

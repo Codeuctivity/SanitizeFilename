@@ -65,18 +65,6 @@ namespace Codeuctivity
         ];
 
         /// <summary>
-        /// CodePoints proven to fail to be used on OsX github runner for filenames
-        /// </summary>
-        public static readonly int[] InvalidCodePointInOsXFileNames = [
-            // U+0ECE Lao Yamakkan https://codepoints.net/U+00ECE
-            3790,
-            // U+0CF3 Kannada Sign Combining Anusvara Above Right https://codepoints.net/U+00CF3
-            3315,
-            // U+11F02 Kawi Sign Repha https://codepoints.net/U+11F02
-            73474,
-        ];
-
-        /// <summary>
         /// These chars are invalid in Windows file names
         /// </summary>
         public static readonly string[] InvalidTrailingChars = [".", " "];
@@ -128,9 +116,6 @@ namespace Codeuctivity
 
             if (InvalidCharsInWindowsFileNames.Contains(replacement))
                 throw new ArgumentException($"Replacement '{replacement}' is invalid for Windows", nameof(replacement));
-
-            if (InvalidCodePointInOsXFileNames.Any(c => char.ConvertFromUtf32(c).Contains(replacement, StringComparison.InvariantCulture)))
-                throw new ArgumentException($"Replacement '{replacement}' is invalid for MacOs", nameof(replacement));
         }
 
         private static string InternalSanitize(string filename, char replacement)
@@ -140,7 +125,7 @@ namespace Codeuctivity
 
         private static string InternalSanitize(string filename, string replacement)
         {
-            var invalidCharsFileNamesSanitized = InternalSanitizeChars(filename, replacement, InvalidCharsInWindowsFileNames, InvalidCodePointInOsXFileNames);
+            var invalidCharsFileNamesSanitized = InternalSanitizeChars(filename, replacement, InvalidCharsInWindowsFileNames);
             var reservedFileNamesSanitized = InternalSanitizeReservedFileNames(invalidCharsFileNamesSanitized, $"{replacement}");
             var reservedFileNamePrefixSanitized = InternalSanitizeReservedFileNamePrefix(reservedFileNamesSanitized, $"{replacement}");
             var trailingCharSanitized = RemoveTrailingPeriodOrSpace(reservedFileNamePrefixSanitized, $"{replacement}");
