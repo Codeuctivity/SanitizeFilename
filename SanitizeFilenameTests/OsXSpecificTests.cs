@@ -1,5 +1,4 @@
 ﻿using Codeuctivity;
-using System.Globalization;
 using System.Runtime.InteropServices;
 
 namespace SanitizeFilenameTests
@@ -20,16 +19,6 @@ namespace SanitizeFilenameTests
 
         public FileWriteAsserter FileWriteAsserter { get; }
 
-        [Test, TestCaseSource(typeof(SanitizeFilename), nameof(SanitizeFilename.InvalidCodePointInOsXFileNames))]
-        public void ShouldSanitizeOsXSpecificInvalidChars(int i)
-        {
-            string fileNameOsXSpecificException = "filename" + char.ConvertFromUtf32(i);
-            string sanitizedFileNameOsXSpecificException = fileNameOsXSpecificException.SanitizeFilename();
-            var actual = FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFileNameOsXSpecificException);
-            Assert.That(actual, $"Expected the fileNameOsXSpecificException {i:X4} to be sanitized and usable on any OS.");
-            Assert.That(fileNameOsXSpecificException, Is.Not.EqualTo(sanitizedFileNameOsXSpecificException));
-        }
-
         [Test]
         // https://codepoints.net/U+11F02?lang=en
         [TestCase(73474)]
@@ -41,41 +30,6 @@ namespace SanitizeFilenameTests
             var actual = FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFileNameOsXSpecificException);
             Assert.That(actual);
             Assert.That(fileNameOsXSpecificException, Is.Not.EqualTo(sanitizedFileNameOsXSpecificException));
-        }
-
-        [Test, TestCaseSource(typeof(SanitizeFilename), nameof(SanitizeFilename.InvalidCodePointInOsXFileNames))]
-        public void ShouldBehaviorOsDependentOnWritingFilenameWithKnownOsXSpecificExceptions(int invalidOnMacOs)
-        {
-            var expected = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-            var filenameInvalidOnMacOs = char.ConvertFromUtf32(invalidOnMacOs) + "Filename.txt";
-            var actual = FileWriteAsserter.TryWriteFileToTempDirectory(filenameInvalidOnMacOs);
-            Assert.That(actual, Is.EqualTo(expected));
-        }
-
-        [Test]
-        public void ShouldProofThatThereAreOnlyKnownExceptionsInListOfInvalidUnicodeCodePoints()
-        {
-            foreach (var item in SanitizeFilename.InvalidCodePointInOsXFileNames)
-            {
-                var category = CharUnicodeInfo.GetUnicodeCategory(item);
-
-                if (item == 3315)
-                {
-                    Assert.That(category, Is.EqualTo(UnicodeCategory.SpacingCombiningMark));
-                }
-                else if (item == 3790)
-                {
-                    Assert.That(category, Is.EqualTo(UnicodeCategory.NonSpacingMark));
-                }
-                else if (item == 73474)
-                {
-                    Assert.That(category, Is.EqualTo(UnicodeCategory.OtherLetter));
-                }
-                else
-                {
-                    Assert.That(category, Is.EqualTo(UnicodeCategory.OtherNotAssigned));
-                }
-            }
         }
 
         [Test]
@@ -101,6 +55,22 @@ namespace SanitizeFilenameTests
             var filenameInvalidOnMacOs = "valid" + unicodeString + "filename" + oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs;
             var actual = FileWriteAsserter.TryWriteFileToTempDirectory(filenameInvalidOnMacOs);
             Assert.That(actual, Is.EqualTo(expected));
+        }
+
+        [Test]
+        // U+0ECE Lao Yamakkan https://codepoints.net/U+00ECE
+        [TestCase(3790)]
+        // U+0CF3 Kannada Sign Combining Anusvara Above Right https://codepoints.net/U+00CF3
+        [TestCase(3315)]
+        // U+11F02 Kawi Sign Repha https://codepoints.net/U+11F02
+        [TestCase(73474)]
+
+        public void MacOsSupportToWriteCodePointsThatFailedOnOsXGibhutRunnersInBeginOf2024(int bogusOsXValue)
+        {
+            // https://unicodelookup.com/#423939/1
+            var filenameInvalidOnMacOs = char.ConvertFromUtf32(bogusOsXValue) + "Filename.txt";
+            var actual = FileWriteAsserter.TryWriteFileToTempDirectory(filenameInvalidOnMacOs);
+            Assert.That(actual, Is.True);
         }
     }
 }
