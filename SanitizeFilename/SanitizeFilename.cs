@@ -21,15 +21,8 @@ namespace Codeuctivity
         /// <summary>
         /// These are the not supported chars in windows file names.
         /// </summary>
-        public static readonly char[] InvalidCharsInWindowsFileNames = ['\\',
-            '/',
-            '\"',
-            '<',
-            '>',
-            '|',
-            ':',
-            '*',
-            '?',
+        public static readonly char[] InvalidCharsInWindowsFileNames = [
+            // (char)0,
             '\0',
             (char)1,
             (char)2,
@@ -62,6 +55,24 @@ namespace Codeuctivity
             (char)29,
             (char)30,
             (char)31,
+            // (char)34,
+            '\"',
+            // (char)42,
+            '*',
+            // (char)47,
+            '/',
+            // (char)58,
+            ':',
+            // (char)60,
+            '<',
+            // (char)62,
+            '>',
+            // (char)63,
+            '?',
+            // (char)92,
+            '\\',
+            // (char)124,
+            '|',
         ];
 
         /// <summary>
