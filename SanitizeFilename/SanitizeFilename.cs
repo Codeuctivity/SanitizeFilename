@@ -4,7 +4,7 @@ using System.Text;
 namespace Codeuctivity
 {
     /// <summary>
-    /// Sanitizes a filename by replacing invalid chars with a replacement char. Follows rules defined in https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
+    /// Sanitizes a file name or directory name by replacing invalid chars or reserved char combinations with a replacement char. Follows rules defined in https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
     /// </summary>
     public static class SanitizeFilename
     {
@@ -92,7 +92,7 @@ namespace Codeuctivity
         public static readonly string FallbackFileName = "FileName";
 
         /// <summary>
-        /// Sanitizes a filename by replacing invalid chars with a replacement char. Follows rules defined in https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
+        /// Sanitizes a file name or directory name by replacing invalid chars or reserved char combinations with a replacement char. Follows rules defined in https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
         /// </summary>
         /// <param name="filename"></param>
         /// <param name="replacement"></param>
@@ -106,7 +106,7 @@ namespace Codeuctivity
         }
 
         /// <summary>
-        /// Sanitizes a filename by replacing invalid chars with a replacement char. Follows rules defined in https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
+        /// Sanitizes a file name or directory name by replacing invalid chars or reserved char combinations with a replacement char. Follows rules defined in https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
         /// </summary>
         /// <param name="filename"></param>
         /// <param name="replacement"></param>

@@ -37,11 +37,11 @@
             {
                 Directory.CreateDirectory(directoryPath);
 
-                var directroyExists = IsFileDirectoryNameFound(directoryName);
+                var directoryExists = IsFileDirectoryNameFound(directoryName);
 
-                if (directroyExists)
+                if (directoryExists)
                     Directory.Delete(directoryPath);
-                return directroyExists;
+                return directoryExists;
             }
             catch (Exception)
             {

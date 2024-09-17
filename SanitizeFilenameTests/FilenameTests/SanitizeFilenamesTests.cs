@@ -2,9 +2,10 @@
 
 namespace SanitizeFilenameTests
 {
-    public class Tests
+    [Parallelizable(ParallelScope.Fixtures)]
+    public class SanitizeFilenamesTests
     {
-        public Tests()
+        public SanitizeFilenamesTests()
         {
             FileWriteAsserter = new FileWriteAsserter();
         }

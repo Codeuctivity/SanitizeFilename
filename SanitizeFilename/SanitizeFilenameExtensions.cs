@@ -30,19 +30,5 @@
 
             return sanitizedFilename;
         }
-
-        public static string SanitizeDirectoryName(this string filename, char replacement = '_')
-        {
-            var sanitizedFilename = Codeuctivity.SanitizeDirectoryName.Sanitize(filename, replacement);
-
-            return sanitizedFilename;
-        }
-
-        public static string SanitizeDirectoryName(this string filename, string replacement)
-        {
-            var sanitizedFilename = Codeuctivity.SanitizeDirectoryName.Sanitize(filename, replacement);
-
-            return sanitizedFilename;
-        }
     }
 }
