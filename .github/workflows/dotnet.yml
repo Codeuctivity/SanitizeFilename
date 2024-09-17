@@ -43,7 +43,7 @@ jobs:
         run: dotnet test --no-build --verbosity normal --configuration Release
 
   deployRelease:
-    if: github.event.pull_request.merged && startsWith(github.ref, 'refs/heads/release')
+    if: startsWith(github.ref, 'refs/heads/release')
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -72,7 +72,7 @@ jobs:
           gh release create ${{env.CURRENT_VERSION}} ./SanitizeFilename/bin/Release/*.*nupkg --generate-notes
 
   deployTest:
-    if: github.event.pull_request.merged && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     needs: build
     steps:
