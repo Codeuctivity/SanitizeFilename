@@ -170,5 +170,25 @@ namespace SanitizeFilenameTests
             Assert.That(sanitizedFilename, Has.Length.EqualTo(expectedSanitizedLength));
             Assert.That(System.Text.Encoding.UTF8.GetByteCount(sanitizedFilename), Is.LessThan(256));
         }
+
+        // Unicode examples https://emojipedia.org/emoji-17.0
+        [TestCase("💏🏻", "Unicode 13.1 example https://emojipedia.org/kiss-light-skin-tone")]
+        public void ShouldSanitizeUnicodeBeforeVersion14(string unicodeSpecificEmoticon, string unicodeVersion)
+        {
+            var sanitizedFilename = unicodeSpecificEmoticon.SanitizeFilename();
+            Assert.That(sanitizedFilename, Is.EqualTo(unicodeSpecificEmoticon));
+            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+        }
+
+        [TestCase("🫠", "Unicode 14 example https://emojipedia.org/melting-face")]
+        [TestCase("🪿", "Unicode 15 example https://emojipedia.org/goose")]
+        [TestCase("🫩", "Unicode 16 example https://emojipedia.org/face-with-bags-under-eyes")]
+        [TestCase("🫝", "Unicdoe 17 example https://emojipedia.org/apple-core")]
+        public void ShouldSanitizeUnicodeVersion14Plus(string unicodeSpecificEmoticon, string unicodeVersion)
+        {
+            var sanitizedFilename = unicodeSpecificEmoticon.SanitizeFilename();
+            Assert.That(sanitizedFilename, Is.Not.EqualTo(unicodeSpecificEmoticon));
+            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+        }
     }
 }
