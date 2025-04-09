@@ -200,7 +200,7 @@ namespace SanitizeFilenameTests
             var sanitizedFilename = unicodeSpecificEmoticon.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(unicodeSpecificEmoticon));
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
-            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.Not.EqualTo(RuntimeInformation.IsOSPlatform(OSPlatform.OSX)));
+            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(unicodeSpecificEmoticon), Is.Not.EqualTo(RuntimeInformation.IsOSPlatform(OSPlatform.OSX)));
 
         }
 
@@ -211,7 +211,7 @@ namespace SanitizeFilenameTests
             var sanitizedFilename = unicodeSpecificEmoticon.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(unicodeSpecificEmoticon));
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
-            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename));
+            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(unicodeSpecificEmoticon));
         }
     }
 }
