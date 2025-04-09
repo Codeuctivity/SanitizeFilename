@@ -1,4 +1,5 @@
 ﻿using Codeuctivity;
+using System.Runtime.InteropServices;
 
 namespace SanitizeFilenameTests
 {
@@ -180,7 +181,9 @@ namespace SanitizeFilenameTests
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
         }
 
+        [TestCase("🫀", "Unicode 13.1 example https://emojipedia.org/anatomical-heart")]
         [TestCase("🫠", "Unicode 14 example https://emojipedia.org/melting-face")]
+        [TestCase("🫥", "Unicode 14 example https://emojipedia.org/dotted-line-face")]
         [TestCase("🪿", "Unicode 15 example https://emojipedia.org/goose")]
         [TestCase("🫩", "Unicode 16 example https://emojipedia.org/face-with-bags-under-eyes")]
         [TestCase("🫝", "Unicdoe 17 example https://emojipedia.org/apple-core")]
@@ -189,6 +192,9 @@ namespace SanitizeFilenameTests
             var sanitizedFilename = unicodeSpecificEmoticon.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(unicodeSpecificEmoticon));
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.Not.EqualTo(RuntimeInformation.IsOSPlatform(OSPlatform.OSX)));
+
+
         }
     }
 }
