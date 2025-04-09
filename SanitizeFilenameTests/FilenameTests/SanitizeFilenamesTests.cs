@@ -172,28 +172,36 @@ namespace SanitizeFilenameTests
             Assert.That(System.Text.Encoding.UTF8.GetByteCount(sanitizedFilename), Is.LessThan(256));
         }
 
-        // Unicode examples https://emojipedia.org/emoji-17.0
-        [TestCase("💏🏻", "Unicode 13.1 example https://emojipedia.org/kiss-light-skin-tone")]
-        public void ShouldSanitizeUnicodeBeforeVersion14(string unicodeSpecificEmoticon, string unicodeVersion)
+        // Unicode examples https://emojipedia.org/unicode-17.0
+        [TestCase("💏🏻", "Unicode 13.1 example https://emojipedia.org/kiss-light-skin-tone but is an https://emojipedia.org/emoji-modifier-sequence combining unicode a codpage from v8 and v6 -> that is not touched by ")]
+        [TestCase("", " Private Use Area (PUA) character that is supported on iOS and macOS https://emojipedia.org/apple-logo")]
+        [TestCase("⛷️", "Unicode 5.2  example https://emojipedia.org/skier")]
+        public void ShouldNotBeTouchedBySanitizer(string unicodeSpecificEmoticon, string unicodeVersion)
         {
             var sanitizedFilename = unicodeSpecificEmoticon.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.EqualTo(unicodeSpecificEmoticon));
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
         }
-
+        // https://learn.microsoft.com/en-us/dotnet/api/system.globalization.charunicodeinfo?view=net-8.0#notes-to-callers 
+        // Unicode examples https://emojipedia.org/unicode-17.0
+        [TestCase("😀", "Unicode 6.1 example https://emojipedia.org/grinning-face")]
+        [TestCase("🚴", "Unicode 6 example https://emojipedia.org/person-biking")]
+        [TestCase("🙂", "Unicode 8 example https://emojipedia.org/person-biking")]
+        [TestCase("🤩", "Unicode 10 example https://emojipedia.org/star-struck#emoji")]
+        [TestCase("🥰", "Unicode 11 example https://emojipedia.org/smiling-face-with-hearts")]
+        [TestCase("🦿", "Unicode 12 example https://emojipedia.org/mechanical-leg")]
         [TestCase("🫀", "Unicode 13.1 example https://emojipedia.org/anatomical-heart")]
         [TestCase("🫠", "Unicode 14 example https://emojipedia.org/melting-face")]
         [TestCase("🫥", "Unicode 14 example https://emojipedia.org/dotted-line-face")]
         [TestCase("🪿", "Unicode 15 example https://emojipedia.org/goose")]
         [TestCase("🫩", "Unicode 16 example https://emojipedia.org/face-with-bags-under-eyes")]
         [TestCase("🫝", "Unicdoe 17 example https://emojipedia.org/apple-core")]
-        public void ShouldSanitizeUnicodeVersion14Plus(string unicodeSpecificEmoticon, string unicodeVersion)
+        public void ShouldSanitizeUnicodeVersion9Plus(string unicodeSpecificEmoticon, string unicodeVersion)
         {
             var sanitizedFilename = unicodeSpecificEmoticon.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(unicodeSpecificEmoticon));
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.Not.EqualTo(RuntimeInformation.IsOSPlatform(OSPlatform.OSX)));
-
 
         }
     }
