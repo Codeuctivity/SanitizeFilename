@@ -195,7 +195,6 @@ namespace SanitizeFilenameTests
         [TestCase("🫥", "Unicode 14 example https://emojipedia.org/dotted-line-face")]
         [TestCase("🪿", "Unicode 15 example https://emojipedia.org/goose")]
         [TestCase("🫩", "Unicode 16 example https://emojipedia.org/face-with-bags-under-eyes")]
-        [TestCase("🫝", "Unicdoe 17 example https://emojipedia.org/apple-core")]
         public void ShouldSanitizeUnicodeVersion9Plus(string unicodeSpecificEmoticon, string unicodeVersion)
         {
             var sanitizedFilename = unicodeSpecificEmoticon.SanitizeFilename();
@@ -203,6 +202,16 @@ namespace SanitizeFilenameTests
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.Not.EqualTo(RuntimeInformation.IsOSPlatform(OSPlatform.OSX)));
 
+        }
+
+        // this one is supported by every OS/FS tested
+        [TestCase("🫝", "Unicdoe 17 example https://emojipedia.org/apple-core")]
+        public void SanitizesUnicodeWithoutNeedExperiment(string unicodeSpecificEmoticon, string unicodeVersion)
+        {
+            var sanitizedFilename = unicodeSpecificEmoticon.SanitizeFilename();
+            Assert.That(sanitizedFilename, Is.Not.EqualTo(unicodeSpecificEmoticon));
+            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename));
         }
     }
 }
