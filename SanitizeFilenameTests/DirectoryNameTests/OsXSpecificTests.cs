@@ -27,7 +27,7 @@ namespace DirectoryNameTests
         {
             string fileNameOsXSpecificException = "filename" + char.ConvertFromUtf32(unicodeOnlyFailingOnOsX);
             string sanitizedFileNameOsXSpecificException = fileNameOsXSpecificException.SanitizeFilename();
-            var actual = DirectoryWriteAsserter.TryWriteDirectoryToTempDirectory(sanitizedFileNameOsXSpecificException);
+            var actual = DirectoryWriteAsserter.TryCreateDirectoryToTempDirectory(sanitizedFileNameOsXSpecificException);
             Assert.That(actual);
             Assert.That(fileNameOsXSpecificException, Is.Not.EqualTo(sanitizedFileNameOsXSpecificException));
         }
@@ -40,7 +40,7 @@ namespace DirectoryNameTests
             string unicodeString = char.ConvertFromUtf32(onOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs);
             var expected = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
             var filenameInvalidOnMacOs = "valid" + unicodeString + "filename" + onOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs;
-            var actual = DirectoryWriteAsserter.TryWriteDirectoryToTempDirectory(filenameInvalidOnMacOs);
+            var actual = DirectoryWriteAsserter.TryCreateDirectoryToTempDirectory(filenameInvalidOnMacOs);
             Assert.That(actual, Is.EqualTo(expected));
         }
 
@@ -53,7 +53,7 @@ namespace DirectoryNameTests
             string unicodeString = char.ConvertFromUtf32(oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs);
             var expected = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
             var filenameInvalidOnMacOs = "valid" + unicodeString + "filename" + oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs;
-            var actual = DirectoryWriteAsserter.TryWriteDirectoryToTempDirectory(filenameInvalidOnMacOs);
+            var actual = DirectoryWriteAsserter.TryCreateDirectoryToTempDirectory(filenameInvalidOnMacOs);
             Assert.That(actual, Is.EqualTo(expected));
         }
 
@@ -68,7 +68,7 @@ namespace DirectoryNameTests
         {
             // https://unicodelookup.com/#423939/1
             var filenameInvalidOnMacOs = char.ConvertFromUtf32(bogusOsXValue) + "Filename.txt";
-            var actual = DirectoryWriteAsserter.TryWriteDirectoryToTempDirectory(filenameInvalidOnMacOs);
+            var actual = DirectoryWriteAsserter.TryCreateDirectoryToTempDirectory(filenameInvalidOnMacOs);
             Assert.That(actual, Is.True);
         }
     }

@@ -18,12 +18,15 @@ namespace DirectoryNameTests
 
         public DirectoryWriteAsserter DirectoryWriteAsserter { get; }
 
-        [Test, TestCaseSource(typeof(SanitizeFilename), nameof(SanitizeFilename.InvalidCharsInWindowsFileNames)), Platform("Win")]
-        public void ShouldBehaviorOsDependentOnWritingFilenameWithKnownWindowsSpecificExceptions(char invalidOnWindows)
+        [Test, Platform("Win")]
+        public void ShouldBehaviorOsDependentOnWritingFilenameWithKnownWindowsSpecificExceptions()
         {
-            var filenameInvalidOnMacOs = "valid" + invalidOnWindows + "filename";
-            var actual = DirectoryWriteAsserter.TryWriteDirectoryToTempDirectory(filenameInvalidOnMacOs);
-            Assert.That(actual, Is.False);
+            foreach (var invalidOnWindows in SanitizeFilename.InvalidCharsInWindowsFileNames)
+            {
+                var filenameInvalidOnMacOs = "valid" + invalidOnWindows + "filename";
+                var actual = DirectoryWriteAsserter.TryCreateDirectoryToTempDirectory(filenameInvalidOnMacOs);
+                Assert.That(actual, Is.False);
+            }
         }
     }
 }

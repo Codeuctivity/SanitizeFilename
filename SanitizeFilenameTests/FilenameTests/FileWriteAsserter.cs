@@ -1,6 +1,4 @@
-﻿using System.Security.Cryptography;
-
-namespace SanitizeFilenameTests
+﻿namespace SanitizeFilenameTests
 {
     public class FileWriteAsserter
     {
@@ -36,10 +34,9 @@ namespace SanitizeFilenameTests
 
         public bool TryWriteFileToTempDirectory(string filename)
         {
-            var filePath = Path.Combine(TempPath, filename);
-
             try
             {
+                var filePath = Path.Combine(TempPath, filename);
                 File.WriteAllText(filePath, "a");
 
                 var fileExists = IsFileWithNameFound(filename);
