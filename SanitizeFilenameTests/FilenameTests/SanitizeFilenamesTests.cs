@@ -1,4 +1,5 @@
 ﻿using Codeuctivity;
+using System.Runtime.InteropServices;
 
 namespace SanitizeFilenameTests
 {
@@ -220,17 +221,17 @@ namespace SanitizeFilenameTests
             Assert.That(sanitizedFilename, Is.Not.EqualTo(unicodeSpecificEmoticon));
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(unicodeSpecificEmoticon), Is.True);
-
         }
 
-        // this one is supported by every OS/FS tested
+        // This one is supported by every OS/FS tested, except macOS, because unicode 17 specific codepoints are not supported by macOS
+        // Behavior on macos is expected to change over time
         [TestCase("🫝", "Unicdoe 17 example https://emojipedia.org/apple-core")]
-        public void SanitizesUnicodeWithoutNeedExperiment(string unicodeSpecificEmoticon, string unicodeVersion)
+        public void Unicode17SpecificMacoOsBehavior(string unicodeSpecificEmoticon, string unicodeVersion)
         {
             var sanitizedFilename = unicodeSpecificEmoticon.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(unicodeSpecificEmoticon));
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
-            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(unicodeSpecificEmoticon));
+            Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(unicodeSpecificEmoticon), Is.Not.EqualTo(RuntimeInformation.IsOSPlatform(OSPlatform.OSX)));
         }
     }
 }
