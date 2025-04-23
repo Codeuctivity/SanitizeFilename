@@ -253,7 +253,9 @@ namespace Codeuctivity
             {
 #if NETSTANDARD2_0
                 filename = filename.Replace(reservedFileName, replacement);
+#pragma warning disable CA1308 // Input is predefined and safe to use with ToLoverInvariant
                 filename = filename.Replace(reservedFileName.ToLowerInvariant(), replacement);
+#pragma warning restore CA1308
 #else
                 filename = filename.Replace(reservedFileName, replacement, true, CultureInfo.InvariantCulture);
 #endif
