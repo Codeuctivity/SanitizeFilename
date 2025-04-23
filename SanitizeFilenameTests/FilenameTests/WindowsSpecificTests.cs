@@ -18,12 +18,15 @@ namespace SanitizeFilenameTests
 
         public FileWriteAsserter FileWriteAsserter { get; }
 
-        [Test, TestCaseSource(typeof(SanitizeFilename), nameof(SanitizeFilename.InvalidCharsInWindowsFileNames)), Platform("Win")]
-        public void ShouldBehaviorOsDependentOnWritingFilenameWithKnownWindowsSpecificExceptions(char invalidOnWindows)
+        [Test, Platform("Win")]
+        public void ShouldBehaviorOsDependentOnWritingFilenameWithKnownWindowsSpecificExceptions()
         {
-            var filenameInvalidOnMacOs = "valid" + invalidOnWindows + "filename";
-            var actual = FileWriteAsserter.TryWriteFileToTempDirectory(filenameInvalidOnMacOs);
-            Assert.That(actual, Is.False);
+            foreach (var invalidOnWindows in SanitizeFilename.InvalidCharsInWindowsFileNames)
+            {
+                var filenameInvalidOnMacOs = "valid" + invalidOnWindows + "filename";
+                var actual = FileWriteAsserter.TryWriteFileToTempDirectory(filenameInvalidOnMacOs);
+                Assert.That(actual, Is.False);
+            }
         }
     }
 }

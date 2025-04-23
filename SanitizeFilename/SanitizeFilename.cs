@@ -4,10 +4,15 @@ using System.Text;
 namespace Codeuctivity
 {
     /// <summary>
-    /// Sanitizes a filename by replacing invalid chars with a replacement char. Follows rules defined in https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
+    /// Sanitizes a file name or directory name by replacing invalid chars or reserved char combinations with a replacement char. Follows rules defined in https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
     /// </summary>
     public static class SanitizeFilename
     {
+        /// <summary>
+        /// Default replacement char for invalid chars in file names. This is used when no replacement char is specified.
+        /// </summary>
+        public const char DefaultReplacementChar = '_';
+
         /// <summary>
         /// These are the reserved names in Windows. See https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file. While .net can write alle of these filenames on modern environments (except PRN), there are many application that will refuse to read them.
         /// </summary>
@@ -21,15 +26,8 @@ namespace Codeuctivity
         /// <summary>
         /// These are the not supported chars in windows file names.
         /// </summary>
-        public static readonly char[] InvalidCharsInWindowsFileNames = ['\\',
-            '/',
-            '\"',
-            '<',
-            '>',
-            '|',
-            ':',
-            '*',
-            '?',
+        public static readonly char[] InvalidCharsInWindowsFileNames = [
+            // (char)0,
             '\0',
             (char)1,
             (char)2,
@@ -62,6 +60,24 @@ namespace Codeuctivity
             (char)29,
             (char)30,
             (char)31,
+            // (char)34,
+            '\"',
+            // (char)42,
+            '*',
+            // (char)47,
+            '/',
+            // (char)58,
+            ':',
+            // (char)60,
+            '<',
+            // (char)62,
+            '>',
+            // (char)63,
+            '?',
+            // (char)92,
+            '\\',
+            // (char)124,
+            '|',
         ];
 
         /// <summary>
@@ -81,12 +97,12 @@ namespace Codeuctivity
         public static readonly string FallbackFileName = "FileName";
 
         /// <summary>
-        /// Sanitizes a filename by replacing invalid chars with a replacement char. Follows rules defined in https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
+        /// Sanitizes a file name or directory name by replacing invalid chars or reserved char combinations with a replacement char. Follows rules defined in https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
         /// </summary>
         /// <param name="filename"></param>
         /// <param name="replacement"></param>
         /// <returns></returns>
-        public static string Sanitize(string filename, char replacement = '_')
+        public static string Sanitize(string filename, char replacement = DefaultReplacementChar)
         {
             ReplacementSanityCheck(replacement);
 
@@ -95,7 +111,7 @@ namespace Codeuctivity
         }
 
         /// <summary>
-        /// Sanitizes a filename by replacing invalid chars with a replacement char. Follows rules defined in https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
+        /// Sanitizes a file name or directory name by replacing invalid chars or reserved char combinations with a replacement char. Follows rules defined in https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file
         /// </summary>
         /// <param name="filename"></param>
         /// <param name="replacement"></param>
@@ -144,10 +160,21 @@ namespace Codeuctivity
             var usedInvalidChars = invalidChars ?? Path.GetInvalidFileNameChars();
 
             foreach (var invalidChar in usedInvalidChars)
+            {
+#if NETSTANDARD2_0
+                filename = filename.Replace(invalidChar.ToString(), replacement);
+#else
                 filename = filename.Replace(invalidChar.ToString(), replacement, StringComparison.Ordinal);
-
+#endif
+            }
             foreach (var invalidCodePoint in invalidCodePoints ?? [])
+            {
+#if NETSTANDARD2_0
+                filename = filename.Replace(char.ConvertFromUtf32(invalidCodePoint), replacement);
+#else
                 filename = filename.Replace(char.ConvertFromUtf32(invalidCodePoint), replacement, StringComparison.Ordinal);
+#endif
+            }
 
             filename = RemoveUnpairedSurrogates(filename, replacement);
 
@@ -223,7 +250,16 @@ namespace Codeuctivity
         private static string InternalSanitizeReservedFileNames(string filename, string replacement)
         {
             foreach (var reservedFileName in ReservedWindowsFileNames)
+            {
+#if NETSTANDARD2_0
+                filename = filename.Replace(reservedFileName, replacement);
+#pragma warning disable CA1308 // Input is predefined and safe to use with ToLoverInvariant
+                filename = filename.Replace(reservedFileName.ToLowerInvariant(), replacement);
+#pragma warning restore CA1308
+#else
                 filename = filename.Replace(reservedFileName, replacement, true, CultureInfo.InvariantCulture);
+#endif
+            }
 
             return filename;
         }
@@ -232,8 +268,11 @@ namespace Codeuctivity
         {
             foreach (var reservedFileNamePrefix in ReservedWindowsFileNamesWithExtension)
                 if (filename.StartsWith(reservedFileNamePrefix, true, CultureInfo.InvariantCulture))
+#if NETSTANDARD2_0
+                    filename = replacement + filename.Substring(0, reservedFileNamePrefix.Length);
+#else
                     filename = string.Concat(replacement, filename.AsSpan(0, reservedFileNamePrefix.Length));
-
+#endif
             return filename;
         }
 
@@ -241,8 +280,13 @@ namespace Codeuctivity
         {
             foreach (var InvalidTrailingChar in InvalidTrailingChars)
                 if (filename.EndsWith(InvalidTrailingChar, true, CultureInfo.InvariantCulture))
+                {
+#if NETSTANDARD2_0
+                    return filename.Remove(filename.Length - 1, 1);
+#else
                     return filename[..^1] + replacement;
-
+#endif
+                }
             return filename;
         }
 
