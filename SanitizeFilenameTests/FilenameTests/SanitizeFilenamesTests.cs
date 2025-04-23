@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace SanitizeFilenameTests
 {
     [Parallelizable(ParallelScope.Fixtures)]
-    public class SanitizeFilenamesTests
+    public class SanitizeFilenamesTests : SanitizeFilenamesTestsBase
     {
         public SanitizeFilenamesTests()
         {
@@ -50,6 +50,12 @@ namespace SanitizeFilenameTests
         public void ShouldThrow(string invalidFilename, char replacement)
         {
             var ex = Assert.Throws<ArgumentException>(() => invalidFilename.SanitizeFilename(replacement));
+
+            if (IsRunningOnNet4x())
+            {
+                Assert.That(ex.Message, Is.EqualTo("Replacement '*' is invalid for Windows\r\nParameter name: replacement"));
+                return;
+            }
 
             Assert.That(ex.Message, Is.EqualTo("Replacement '*' is invalid for Windows (Parameter 'replacement')"));
         }
@@ -164,6 +170,11 @@ namespace SanitizeFilenameTests
         [TestCase("👩🏽‍🚒", 241, "a", 241)]
         public void ShouldTruncateLongFileNamesPreserveUnicodeTextElements(string testSuffix, int countOfFillingAChars, string expectedEnd, int expectedSanitizedLength)
         {
+            if (IsRunningOnNet4x())
+            {
+                Assert.Pass("Test is not thought to be run with .net framwework / unicode 8");
+            }
+
             var invalidFilename = new string('a', countOfFillingAChars) + testSuffix;
             var sanitizedFilename = invalidFilename.SanitizeFilename();
             Assert.That(sanitizedFilename, Does.EndWith(expectedEnd));
@@ -173,15 +184,24 @@ namespace SanitizeFilenameTests
         }
 
         // Unicode examples https://emojipedia.org/unicode-17.0
-        [TestCase("💏🏻", "Unicode 13.1 example https://emojipedia.org/kiss-light-skin-tone but is an https://emojipedia.org/emoji-modifier-sequence combining unicode a codpage from v8 and v6 -> that is not touched by ")]
-        [TestCase("", " Private Use Area (PUA) character that is supported on iOS and macOS https://emojipedia.org/apple-logo")]
-        [TestCase("⛷️", "Unicode 5.2  example https://emojipedia.org/skier")]
-        public void ShouldNotBeTouchedBySanitizer(string unicodeSpecificEmoticon, string unicodeVersion)
+        [TestCase("💏🏻", 13, "__", "Unicode 13.1 example https://emojipedia.org/kiss-light-skin-tone but is an https://emojipedia.org/emoji-modifier-sequence combining unicode a codpage from v8 and v6 -> that is not touched by ")]
+        [TestCase("", null, null, " Private Use Area (PUA) character that is supported on iOS and macOS https://emojipedia.org/apple-logo")]
+        [TestCase("⛷️", 5, null, "Unicode 5.2  example https://emojipedia.org/skier")]
+        public void ShouldNotBeTouchedBySanitizer(string unicodeSpecificEmoticon, int? unicodeVersion, string? expectedNetFramework, string unicodeVersionNote)
         {
+            var expected = unicodeSpecificEmoticon;
+
+            // https://learn.microsoft.com/en-us/dotnet/framework/whats-new/#character-categories .net framework 4.0 is stuck to Unicode 8
+            if (unicodeVersion.HasValue && unicodeVersion > 8 && IsRunningOnNet4x())
+            {
+                expected = expectedNetFramework;
+            }
+
             var sanitizedFilename = unicodeSpecificEmoticon.SanitizeFilename();
-            Assert.That(sanitizedFilename, Is.EqualTo(unicodeSpecificEmoticon));
+            Assert.That(sanitizedFilename, Is.EqualTo(expected));
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
         }
+
         // https://learn.microsoft.com/en-us/dotnet/api/system.globalization.charunicodeinfo?view=net-8.0#notes-to-callers 
         // Unicode examples https://emojipedia.org/unicode-17.0
         [TestCase("😀", "Unicode 6.1 example https://emojipedia.org/grinning-face")]

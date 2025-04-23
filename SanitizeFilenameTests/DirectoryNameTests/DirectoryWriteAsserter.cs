@@ -17,7 +17,7 @@
 
             Parallel.ForEach(validDirectoryNames, validDirectoryName =>
             {
-                if (!TryWriteDirectoryToTempDirectory(validDirectoryName.Item1))
+                if (!TryCreateDirectoryToTempDirectory(validDirectoryName.Item1))
                 {
                     lock (invalidDirectoryNames)
                     {
@@ -29,12 +29,11 @@
             Assert.That(invalidDirectoryNames.OrderBy(x => x.Item2), Is.Empty, GenerateAssertionMessage(invalidDirectoryNames));
         }
 
-        public bool TryWriteDirectoryToTempDirectory(string directoryName)
+        public bool TryCreateDirectoryToTempDirectory(string directoryName)
         {
-            var directoryPath = Path.Combine(TempPath, directoryName);
-
             try
             {
+                var directoryPath = Path.Combine(TempPath, directoryName);
                 Directory.CreateDirectory(directoryPath);
 
                 var directoryExists = IsFileDirectoryNameFound(directoryName);

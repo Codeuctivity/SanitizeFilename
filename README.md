@@ -37,3 +37,11 @@ Restrictions of Windows, Linux and OsX are alle combined to an replacement patte
 | Max length                       | Linux, Windows, OsX           |                         | 255 chars          |
 | Unpaired Unicode surrogates      | OsX, Linux                    | Windows                 | U+D800 - U+DFFF    |
 | NotAssigned to Unicode           | OsX                           | Linux, Windows          | U+67803, ...       |
+
+## .net framework support
+
+- Support for legacy .NET versions will be maintained as long as it is [funded](https://github.com/sponsors/Codeuctivity).
+- Support for .NET Framework 4.6.2 and higher was added in Version 1.x.
+- Edge case Unicode sanitization: [.NET Framework](https://learn.microsoft.com/en-us/dotnet/framework/whats-new/#character-categories) uses Unicode 8.0, while .NET 8+ uses a newer version to detect unpaired surrogates and unassigned code points.
+	- This is relevant when dealing with emoticons.
+	- For example, ["💏🏻"](https://emojipedia.org/kiss-light-skin-tone) will be sanitized when running on .NET Framework 4.8, while it is supported as a valid filename on modern filesystems

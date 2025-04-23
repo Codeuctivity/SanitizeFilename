@@ -1,9 +1,10 @@
 ﻿using Codeuctivity;
+using SanitizeFilenameTests;
 
 namespace DirectoryNameTests
 {
     [Parallelizable(ParallelScope.Fixtures)]
-    public class SanitizeDirectoryNamesTests
+    public class SanitizeDirectoryNamesTests : SanitizeFilenamesTestsBase
     {
         public SanitizeDirectoryNamesTests()
         {
@@ -49,6 +50,11 @@ namespace DirectoryNameTests
         public void ShouldThrow(string invalidDirectoryName, char replacement)
         {
             var ex = Assert.Throws<ArgumentException>(() => invalidDirectoryName.SanitizeFilename(replacement));
+
+            if (IsRunningOnNet4x())
+            {
+                Assert.Pass("Test is not thought to be run with .net framwework / unicode 8");
+            }
 
             Assert.That(ex.Message, Is.EqualTo("Replacement '*' is invalid for Windows (Parameter 'replacement')"));
         }
@@ -96,7 +102,7 @@ namespace DirectoryNameTests
                 var sanitizedFilename = invalidDirectoryName.SanitizeFilename();
 
                 Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidDirectoryName));
-                Assert.That(DirectoryWriteAsserter.TryWriteDirectoryToTempDirectory(sanitizedFilename), Is.True);
+                Assert.That(DirectoryWriteAsserter.TryCreateDirectoryToTempDirectory(sanitizedFilename), Is.True);
             }
         }
 
@@ -133,7 +139,7 @@ namespace DirectoryNameTests
         {
             var sanitizedFilename = invalidDirectoryName.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidDirectoryName));
-            Assert.That(DirectoryWriteAsserter.TryWriteDirectoryToTempDirectory(sanitizedFilename), Is.True);
+            Assert.That(DirectoryWriteAsserter.TryCreateDirectoryToTempDirectory(sanitizedFilename), Is.True);
         }
 
         [Test]
@@ -142,7 +148,7 @@ namespace DirectoryNameTests
         {
             var sanitizedFilename = invalidDirectoryName.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidDirectoryName));
-            Assert.That(DirectoryWriteAsserter.TryWriteDirectoryToTempDirectory(sanitizedFilename), Is.True);
+            Assert.That(DirectoryWriteAsserter.TryCreateDirectoryToTempDirectory(sanitizedFilename), Is.True);
         }
 
         [Test]
@@ -151,7 +157,7 @@ namespace DirectoryNameTests
         {
             var sanitizedFilename = invalidDirectoryName.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(invalidDirectoryName));
-            Assert.That(DirectoryWriteAsserter.TryWriteDirectoryToTempDirectory(sanitizedFilename), Is.True);
+            Assert.That(DirectoryWriteAsserter.TryCreateDirectoryToTempDirectory(sanitizedFilename), Is.True);
         }
 
         [Test]
@@ -163,10 +169,15 @@ namespace DirectoryNameTests
         [TestCase("👩🏽‍🚒", 241, "a", 241)]
         public void ShouldTruncateLongFileNamesPreserveUnicodeTextElements(string testSuffix, int countOfFillingAChars, string expectedEnd, int expectedSanitizedLength)
         {
+            if (IsRunningOnNet4x())
+            {
+                Assert.Pass("Test is not thought to be run with .net framwework / unicode 8");
+            }
+
             var invalidDirectoryName = new string('a', countOfFillingAChars) + testSuffix;
             var sanitizedDirectoryName = invalidDirectoryName.SanitizeFilename();
             Assert.That(sanitizedDirectoryName, Does.EndWith(expectedEnd));
-            Assert.That(DirectoryWriteAsserter.TryWriteDirectoryToTempDirectory(sanitizedDirectoryName), Is.True);
+            Assert.That(DirectoryWriteAsserter.TryCreateDirectoryToTempDirectory(sanitizedDirectoryName), Is.True);
             Assert.That(sanitizedDirectoryName, Has.Length.EqualTo(expectedSanitizedLength));
             Assert.That(System.Text.Encoding.UTF8.GetByteCount(sanitizedDirectoryName), Is.LessThan(256));
         }
