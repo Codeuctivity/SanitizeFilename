@@ -1,7 +1,6 @@
 {
     "recommendations": [
-        "ms-dotnettools.csharp",
-        "formulahendry.dotnet-test-explorer",
-        "github.vscode-pull-request-github"
+        "github.vscode-pull-request-github",
+        "ms-dotnettools.csdevkit"
     ]
 }

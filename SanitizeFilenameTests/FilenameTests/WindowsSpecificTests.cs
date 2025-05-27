@@ -23,8 +23,8 @@ namespace SanitizeFilenameTests
         {
             foreach (var invalidOnWindows in SanitizeFilename.InvalidCharsInWindowsFileNames)
             {
-                var filenameInvalidOnMacOs = "valid" + invalidOnWindows + "filename";
-                var actual = FileWriteAsserter.TryWriteFileToTempDirectory(filenameInvalidOnMacOs);
+                var filenameInvalidOnWindows = "valid" + invalidOnWindows + "filename";
+                var actual = FileWriteAsserter.TryWriteFileToTempDirectory(filenameInvalidOnWindows);
                 Assert.That(actual, Is.False);
             }
         }

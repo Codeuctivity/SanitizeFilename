@@ -21,7 +21,7 @@ namespace SanitizeFilenameTests
         {
             if (IsRunningOnNet4x())
             {
-                Assert.Pass("Test is not thought to be run with .net framwework / unicode 8");
+                Assert.Pass("Test is not thought to be run with .net framework / unicode 8");
             }
 
             var expected = !RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
