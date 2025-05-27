@@ -1,6 +1,6 @@
 # SanitizeFilename
 
-Sanitizes file and directory names to ensure compatibility with Windows (NTFS), Linux (ext4), and macOS (APFS?).
+Sanitizes file and directory names to ensure compatibility with Windows (NTFS), Linux (ext4), and macOS (APFS).
 
 [![.NET build and test](https://github.com/Codeuctivity/SanitizeFilename/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Codeuctivity/SanitizeFilename/actions/workflows/dotnet.yml) [![NuGet](https://img.shields.io/nuget/v/Codeuctivity.SanitizeFilename.svg)](https://www.nuget.org/packages/Codeuctivity.SanitizeFilename/) [![Donate](https://img.shields.io/static/v1?label=Paypal&message=Donate&color=informational)](https://www.paypal.com/donate?hosted_button_id=7M7UFMMRTS7UE)
 
@@ -33,7 +33,7 @@ Restrictions of Windows, Linux and OsX are alle combined to an replacement patte
 | Reserved chars                | Linux, Windows, OsX           |                         | '/', '\0'          |
 | Reserved chars windows       | Windows                       | Linux, OsX             | '\\\', '""', ...   |
 | Invalid trailing chars        | Windows                       | Linux, OsX             | ' ', ','           |
-| Max length Linux              | Linux,                        | [Windows, OsX](https://github.com/Codeuctivity/SanitizeFilename/blob/1752466b63bdbb736d8b43e13c8cb44b0fd6343c/SanitizeFilenameTests/FilenameTests/LinuxSpecificTests.cs#L20)          | 255 bytes          |
+| Max length Linux              | Linux,                        | [Windows, OsX]()          | 255 bytes          |
 | Max length                    | Linux, Windows, OsX           |                         | 255 chars          |
 | Unpaired Unicode surrogates   | OsX, Linux                    | Windows                 | U+D800 - U+DFFF    |
 | NotAssigned to Unicode        | OsX                           | Linux, Windows          | U+67803, ...       |
