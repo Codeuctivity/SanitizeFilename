@@ -172,7 +172,7 @@ namespace SanitizeFilenameTests
         {
             if (IsRunningOnNet4x())
             {
-                Assert.Pass("Test is not thought to be run with .net framwework / unicode 8");
+                Assert.Pass("Test is not thought to be run with .net framework / unicode 8");
             }
 
             var invalidFilename = new string('a', countOfFillingAChars) + testSuffix;
@@ -202,7 +202,7 @@ namespace SanitizeFilenameTests
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
         }
 
-        // https://learn.microsoft.com/en-us/dotnet/api/system.globalization.charunicodeinfo?view=net-8.0#notes-to-callers 
+        // https://learn.microsoft.com/en-us/dotnet/api/system.globalization.charunicodeinfo?view=net-8.0#notes-to-callers
         // Unicode examples https://emojipedia.org/unicode-17.0
         [TestCase("😀", "Unicode 6.1 example https://emojipedia.org/grinning-face")]
         [TestCase("🚴", "Unicode 6 example https://emojipedia.org/person-biking")]
