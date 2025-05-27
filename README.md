@@ -33,7 +33,7 @@ Restrictions of Windows, Linux and OsX are alle combined to an replacement patte
 | Reserved chars                | Linux, Windows, OsX           |                         | '/', '\0'          |
 | Reserved chars windows       | Windows                       | Linux, OsX             | '\\\', '""', ...   |
 | Invalid trailing chars        | Windows                       | Linux, OsX             | ' ', ','           |
-| Max length Linux              | Linux,                        | [Windows, OsX]()          | 255 bytes          |
+| Max length Linux              | Linux,                        | [Windows, OsX](https://github.com/Codeuctivity/SanitizeFilename/blob/387103492098cd9cef0f8596a96dc6c2dfe2eba3/SanitizeFilenameTests/FilenameTests/LinuxSpecificTests.cs#L20)          | 255 bytes          |
 | Max length                    | Linux, Windows, OsX           |                         | 255 chars          |
 | Unpaired Unicode surrogates   | OsX, Linux                    | Windows                 | U+D800 - U+DFFF    |
 | NotAssigned to Unicode        | OsX                           | Linux, Windows          | U+67803, ...       |
