@@ -18,9 +18,12 @@ namespace SanitizeFilenameTests
 
         public FileWriteAsserter FileWriteAsserter { get; }
 
-        [Test, Platform("Win")]
+        [Test]
         public void ShouldBehaviorOsDependentOnWritingFilenameWithKnownWindowsSpecificExceptions()
         {
+#if !WINDOWS
+            Assert.Ignore("Test is only applicable on Windows.");
+#endif
             foreach (var invalidOnWindows in SanitizeFilename.InvalidCharsInWindowsFileNames)
             {
                 var filenameInvalidOnWindows = "valid" + invalidOnWindows + "filename";
