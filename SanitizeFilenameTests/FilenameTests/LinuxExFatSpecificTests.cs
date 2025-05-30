@@ -1,0 +1,52 @@
+﻿using System.Runtime.InteropServices;
+
+namespace SanitizeFilenameTests
+{
+    internal class LinuxExFatSpecificTests : SanitizeFilenamesTestsBase
+    {
+        public LinuxExFatSpecificTests()
+        {
+            FileWriteAsserter = new CustomFsFileWriteAsserter();
+        }
+
+        [OneTimeTearDown]
+        public void TearDown()
+        {
+            if (Directory.Exists(FileWriteAsserter.TempPath))
+                Directory.Delete(FileWriteAsserter.TempPath, true);
+        }
+
+        [Test]
+        public void ShouldBehaviorOsDependentOnWritingFilenameWithMoreThan255Bytes()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                Assert.Ignore("CustomFsFileWriteAsserter is only applicable on Linux.");
+            }
+
+            //https://learn.microsoft.com/en-us/windows/win32/fileio/exfat-specification#table-35-invalid-filename-characters
+            //https://learn.microsoft.com/en-us/windows/win32/fileio/exfat-specification#table-35-invalid-filename-characters
+            // var invalidChars = new[] { 
+            //     '\u0000', '\u0001', '\u0002', '\u0003', '\u0004', '\u0005', '\u0006', '\u0007',
+            //     '\u0008', '\u0009', '\u000A', '\u000B', '\u000C', '\u000D', '\u000E', '\u000F',
+            //     '\u0010', '\u0011', '\u0012', '\u0013', '\u0014', '\u0015', '\u0016', '\u0017',
+            //     '\u0018', '\u0019', '\u001A', '\u001B', '\u001C', '\u001D', '\u001E', '\u001F',
+            //     '\"', '*', '/', ':', '<', '>', '?', '\\', '|'
+            // };
+
+            var invalidChars = new[] {
+     '|'
+};
+            foreach (var invalidOnExFat in invalidChars)
+            {
+                var filenameInvalidOnExFat = "valid" + invalidOnExFat + "filename";
+                var actual = FileWriteAsserter.TryWriteFileToTempDirectory(filenameInvalidOnExFat);
+                Assert.That(actual, Is.False,
+                    $"Expected writing file with name '{filenameInvalidOnExFat}' to fail on exFAT, but it succeeded.");
+            }
+
+        }
+
+        public CustomFsFileWriteAsserter FileWriteAsserter { get; }
+    }
+}

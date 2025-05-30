@@ -28,7 +28,8 @@ namespace SanitizeFilenameTests
             {
                 var filenameInvalidOnWindows = "valid" + invalidOnWindows + "filename";
                 var actual = FileWriteAsserter.TryWriteFileToTempDirectory(filenameInvalidOnWindows);
-                Assert.That(actual, Is.False);
+                Assert.That(actual, Is.False,
+                    $"Expected writing file with name '{filenameInvalidOnWindows}' to fail on Windows, but it succeeded.");
             }
         }
     }

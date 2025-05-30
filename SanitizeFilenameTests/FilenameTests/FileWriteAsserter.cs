@@ -9,7 +9,7 @@
                 Directory.CreateDirectory(TempPath);
         }
 
-        public string TempPath { get; }
+        public string TempPath { get; set; }
 
         internal void AssertCollection(List<(string, int)> validFilenames)
         {
