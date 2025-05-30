@@ -35,12 +35,13 @@ namespace SanitizeFilenameTests
                 );
 
             // 2. Format the file as exFAT
+            var mkfsCmd = $"sudo mkfs.exfat -n testlabel \"{diskImagePath}\"";
             var mkfsProcess = new Process
             {
                 StartInfo = new ProcessStartInfo
                 {
-                    FileName = "mkfs.exfat",
-                    Arguments = $"-n testlabel {diskImagePath}",
+                    FileName = "bash",
+                    Arguments = $"-c \"{mkfsCmd}\"",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
