@@ -13,9 +13,9 @@ namespace SanitizeFilenameTests
 
             // 1. Create a file to act as a block device
             var createImgCmd = $"dd if=/dev/zero of=\"{diskImagePath}\" bs=1M count={sizeMb}";
-            var procImg = new System.Diagnostics.Process
+            var procImg = new Process
             {
-                StartInfo = new System.Diagnostics.ProcessStartInfo
+                StartInfo = new ProcessStartInfo
                 {
                     FileName = "bash",
                     Arguments = $"-c \"sudo {createImgCmd}\"",
@@ -62,10 +62,26 @@ namespace SanitizeFilenameTests
 
             // this will fail when running on code spaces or similar environments where mounting is locked down
             var mountCmd = $"mount -o loop \"{diskImagePath}\" \"{TempPath}\"";
-            var procMount = System.Diagnostics.Process.Start("bash", $"-c \"sudo {mountCmd}\"");
+            var procMount = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "bash",
+                    Arguments = $"-c \"sudo {mountCmd}\"",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+            procMount.Start();
+            string mountStdOut = procMount.StandardOutput.ReadToEnd();
+            string mountStdErr = procMount.StandardError.ReadToEnd();
             procMount.WaitForExit();
             if (procMount.ExitCode != 0)
-                throw new InvalidOperationException($"Failed to mount exFAT image at {TempPath}. Exit code: {procMount.ExitCode}");
+                throw new InvalidOperationException(
+                    $"Failed to mount exFAT image at {TempPath}. Exit code: {procMount.ExitCode}\nSTDOUT: {mountStdOut}\nSTDERR: {mountStdErr}"
+                );
         }
     }
 }
