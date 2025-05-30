@@ -17,14 +17,13 @@ namespace SanitizeFilenameTests
         }
 
         [Test]
-        public void ShouldBehaviorOsDependentOnWritingFilenameWithMoreThan255Bytes()
+        public void ShouldBehaviorSpecificOnExFat()
         {
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 Assert.Ignore("CustomFsFileWriteAsserter is only applicable on Linux.");
             }
 
-            //https://learn.microsoft.com/en-us/windows/win32/fileio/exfat-specification#table-35-invalid-filename-characters
             //https://learn.microsoft.com/en-us/windows/win32/fileio/exfat-specification#table-35-invalid-filename-characters
             // var invalidChars = new[] { 
             //     '\u0000', '\u0001', '\u0002', '\u0003', '\u0004', '\u0005', '\u0006', '\u0007',
@@ -34,9 +33,7 @@ namespace SanitizeFilenameTests
             //     '\"', '*', '/', ':', '<', '>', '?', '\\', '|'
             // };
 
-            var invalidChars = new[] {
-     '|'
-};
+            var invalidChars = new[] { '|' };
             foreach (var invalidOnExFat in invalidChars)
             {
                 var filenameInvalidOnExFat = "valid" + invalidOnExFat + "filename";

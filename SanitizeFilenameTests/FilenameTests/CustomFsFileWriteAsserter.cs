@@ -1,54 +1,70 @@
-﻿namespace SanitizeFilenameTests
+﻿using System.Diagnostics;
+
+namespace SanitizeFilenameTests
 {
     public class CustomFsFileWriteAsserter : FileWriteAsserter
     {
         public CustomFsFileWriteAsserter()
         {
-            // Try to create a ramdisk with exFAT on Linux
             // Requires root privileges and exfat-utils/exfatprogs installed
 
-            TempPath = Path.Combine(Path.GetTempPath(), "test" + Guid.NewGuid());
-            if (!Directory.Exists(TempPath))
-                Directory.CreateDirectory(TempPath);
+            var sizeMb = 16; // 16MB disk image, safe for exFAT
+            var diskImagePath = Path.Combine(TempPath, "exfat.img");
 
-            var ramdiskPath = TempPath;
-            var sizeMb = 1; // 1MB ramdisk
-            var mountCmd = $"mount -t tmpfs -o size={sizeMb}M tmpfs \"{ramdiskPath}\"";
-            var mkfsCmd = $"mkfs.exfat \"{ramdiskPath}\"";
-
-            // Mount tmpfs
-            var procMount = new System.Diagnostics.Process
+            // 1. Create a file to act as a block device
+            var createImgCmd = $"dd if=/dev/zero of=\"{diskImagePath}\" bs=1M count={sizeMb}";
+            var procImg = new System.Diagnostics.Process
             {
                 StartInfo = new System.Diagnostics.ProcessStartInfo
                 {
                     FileName = "bash",
-                    Arguments = $"-c \"sudo {mountCmd}\"",
+                    Arguments = $"-c \"sudo {createImgCmd}\"",
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
                     UseShellExecute = false,
                     CreateNoWindow = true
                 }
             };
-            procMount.Start();
-            string mountStdOut = procMount.StandardOutput.ReadToEnd();
-            string mountStdErr = procMount.StandardError.ReadToEnd();
+            procImg.Start();
+            string imgStdOut = procImg.StandardOutput.ReadToEnd();
+            string imgStdErr = procImg.StandardError.ReadToEnd();
+            procImg.WaitForExit();
+            if (procImg.ExitCode != 0)
+                throw new InvalidOperationException(
+                    $"Failed to create disk image. Exit code: {procImg.ExitCode}\nSTDOUT: {imgStdOut}\nSTDERR: {imgStdErr}"
+                );
+
+            // 2. Format the file as exFAT
+            var mkfsProcess = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "mkfs.exfat",
+                    Arguments = $"-n testlabel {diskImagePath}",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+            mkfsProcess.Start();
+            mkfsProcess.WaitForExit();
+            if (mkfsProcess.ExitCode != 0)
+            {
+                var errorOutput = mkfsProcess.StandardError.ReadToEnd();
+                throw new InvalidOperationException($"Failed to format disk image as exFAT. Exit code: {mkfsProcess.ExitCode}. Error: {errorOutput}");
+            }
+
+            // 3. Mount the file as a loop device
+            TempPath = Path.Combine(Path.GetTempPath(), "test" + Guid.NewGuid());
+            Directory.CreateDirectory(TempPath);
+
+            // this will fail when running on code spaces or similar environments where mounting is locked down
+            var mountCmd = $"mount -o loop \"{diskImagePath}\" \"{TempPath}\"";
+            var procMount = System.Diagnostics.Process.Start("bash", $"-c \"sudo {mountCmd}\"");
             procMount.WaitForExit();
             if (procMount.ExitCode != 0)
-            {
-                // fails on codespace dev container
-                throw new InvalidOperationException(
-                    $"Failed to mount tmpfs at {ramdiskPath}. Exit code: {procMount.ExitCode}\nSTDOUT: {mountStdOut}\nSTDERR: {mountStdErr}"
-                );
-            }
-
-            // Format as exFAT
-            var procMkfs = System.Diagnostics.Process.Start("bash", $"-c \"sudo {mkfsCmd}\"");
-            procMkfs.WaitForExit();
-            if (procMkfs.ExitCode != 0)
-            {
-                throw new InvalidOperationException($"Failed to format ramdisk as exFAT at {ramdiskPath}. Exit code: {procMkfs.ExitCode}");
-            }
-
+                throw new InvalidOperationException($"Failed to mount exFAT image at {TempPath}. Exit code: {procMount.ExitCode}");
         }
     }
 }
