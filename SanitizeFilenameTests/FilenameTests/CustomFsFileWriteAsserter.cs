@@ -2,6 +2,7 @@
 
 namespace SanitizeFilenameTests
 {
+    // that wont run on wsl, gihtug code spaces and github actions https://github.com/microsoft/WSL/issues/11801
     public class CustomFsFileWriteAsserter : FileWriteAsserter
     {
         public CustomFsFileWriteAsserter()
