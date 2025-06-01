@@ -111,14 +111,22 @@ if (-not (Test-Path '{vhdxPath}')) {{
 }}
 Mount-VHD -Path '{vhdxPath}' | Out-Null
 Start-Sleep -Seconds 2
-$disk = Get-Disk | Where-Object {{$_.Location -like '*{System.IO.Path.GetFileName(vhdxPath)}*'}} | Where-Object {{$_.PartitionStyle -eq 'RAW' -or $_.PartitionStyle -eq 'GPT'}}
-if ($disk -and $disk.PartitionStyle -eq 'RAW') {{
-    Initialize-Disk -Number $disk.Number -PartitionStyle GPT -PassThru | Out-Null
-    $partition = New-Partition -DiskNumber $disk.Number -UseMaximumSize -AssignDriveLetter
-    Format-Volume -Partition $partition -FileSystem exFAT -NewFileSystemLabel '{exfatLabel}' -Confirm:$false | Out-Null
+$disk = Get-Disk | Where-Object {{ $_.Location -like '*{System.IO.Path.GetFileName(vhdxPath)}*' }}
+if ($disk) {{
+    if ($disk.PartitionStyle -eq 'RAW') {{
+        Initialize-Disk -Number $disk.Number -PartitionStyle GPT -PassThru | Out-Null
+    }}
+    $partition = Get-Partition -DiskNumber $disk.Number | Where-Object {{ $_.Type -ne 'Reserved' }} | Select-Object -First 1
+    if (-not $partition) {{
+        $partition = New-Partition -DiskNumber $disk.Number -UseMaximumSize -AssignDriveLetter
+    }}
+    $vol = Get-Volume -DiskNumber $disk.Number | Where-Object {{ $_.FileSystem -eq 'exFAT' }}
+    if (-not $vol) {{
+        Format-Volume -Partition $partition -FileSystem exFAT -NewFileSystemLabel '{exfatLabel}' -Confirm:$false | Out-Null
+        $vol = Get-Volume -DiskNumber $disk.Number | Where-Object {{ $_.FileSystem -eq 'exFAT' }}
+    }}
+    $vol.DriveLetter
 }}
-$vol = Get-Volume -FileSystemLabel '{exfatLabel}'
-$vol.DriveLetter
 ";
 
             var process = new System.Diagnostics.Process
