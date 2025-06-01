@@ -12,18 +12,14 @@ namespace SanitizeFilenameTests
         [OneTimeTearDown]
         public void TearDown()
         {
-            if (Directory.Exists(FileWriteAsserter.TempPath))
-                Directory.Delete(FileWriteAsserter.TempPath, true);
+            FileWriteAsserter.Dispose();
         }
 
         public FileWriteAsserter FileWriteAsserter { get; }
 
-        [Test]
+        [Test, Platform("Win")]
         public void ShouldBehaviorOsDependentOnWritingFilenameWithKnownWindowsSpecificExceptions()
         {
-#if !WINDOWS
-            Assert.Ignore("Test is only applicable on Windows.");
-#endif
             foreach (var invalidOnWindows in SanitizeFilename.InvalidCharsInWindowsFileNames)
             {
                 var filenameInvalidOnWindows = "valid" + invalidOnWindows + "filename";

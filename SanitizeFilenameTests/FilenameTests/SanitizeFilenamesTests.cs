@@ -16,8 +16,7 @@ namespace SanitizeFilenameTests
         [OneTimeTearDown]
         public void TearDown()
         {
-            if (Directory.Exists(FileWriteAsserter.TempPath))
-                Directory.Delete(FileWriteAsserter.TempPath, true);
+            FileWriteAsserter.Dispose();
         }
 
         private static readonly string[] InvalidWindowsFileNames = ["invalid<filename", "invalid>filename", "invalid\"filename", "invalid/filename", "invalid\\filename", "invalid|filename", "invalid?filename", "invalid*filename",];
