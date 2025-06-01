@@ -135,6 +135,14 @@ $vol.DriveLetter
             process.Start();
             exfatDrive = process.StandardOutput.ReadToEnd().Trim();
             process.WaitForExit();
+            if (process.ExitCode != 0)
+            {
+                string stdOut = exfatDrive;
+                string stdErr = process.StandardError != null ? process.StandardError.ReadToEnd() : "";
+                throw new InvalidOperationException(
+                    $"Failed to create or mount exFAT VHDX for testing. Exit code: {process.ExitCode}. Output: {stdOut} Error: {stdErr}"
+                );
+            }
 
             if (!string.IsNullOrEmpty(exfatDrive))
             {
