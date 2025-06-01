@@ -5,15 +5,12 @@ namespace SanitizeFilenameTests
 {
     internal class WindowsExFatSpecificTests : SanitizeFilenamesTestsBase
     {
-        public WindowsExFatSpecificTests()
-        {
-            FileWriteAsserter = new FileWriteAsserter(true);
-        }
+
 
         [OneTimeTearDown]
         public void TearDown()
         {
-            FileWriteAsserter.Dispose();
+            FileWriteAsserter?.Dispose();
         }
 
         [Test]
@@ -24,11 +21,23 @@ namespace SanitizeFilenameTests
                 Assert.Ignore("CustomFsFileWriteAsserter is only applicable on Windows.");
             }
 
+            // Skip if running on Windows ARM
+            if (RuntimeInformation.OSArchitecture == Architecture.Arm || RuntimeInformation.OSArchitecture == Architecture.Arm64)
+            {
+                Assert.Ignore("Test is skipped on Windows ARM because VHD mounting is not supported.");
+            }
+
             // Skip if not running as administrator
             if (!IsRunningAsAdministrator())
             {
                 Assert.Ignore("Test requires administrator privileges to create and mount exFAT VHD.");
             }
+
+            if (FileWriteAsserter == null)
+            {
+                FileWriteAsserter = new FileWriteAsserter(true);
+            }
+
 
             //https://learn.microsoft.com/en-us/windows/win32/fileio/exfat-specification#table-35-invalid-filename-characters
             var invalidChars = new[] {
@@ -61,6 +70,8 @@ namespace SanitizeFilenameTests
             return principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
         }
 
-        public FileWriteAsserter FileWriteAsserter { get; }
+#pragma warning disable NUnit1032 // An IDisposable field/property should be Disposed in a TearDown method
+        private FileWriteAsserter? FileWriteAsserter { get; set; }
+#pragma warning restore NUnit1032 // An IDisposable field/property should be Disposed in a TearDown method
     }
 }
