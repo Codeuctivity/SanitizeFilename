@@ -24,6 +24,12 @@ namespace SanitizeFilenameTests
                 Assert.Ignore("CustomFsFileWriteAsserter is only applicable on Windows.");
             }
 
+            // Skip if not running as administrator
+            if (!IsRunningAsAdministrator())
+            {
+                Assert.Ignore("Test requires administrator privileges to create and mount exFAT VHD.");
+            }
+
             //https://learn.microsoft.com/en-us/windows/win32/fileio/exfat-specification#table-35-invalid-filename-characters
             var invalidChars = new[] {
                  '\u0000', '\u0001', '\u0002', '\u0003', '\u0004', '\u0005', '\u0006', '\u0007',
@@ -33,7 +39,6 @@ namespace SanitizeFilenameTests
                  '\"', '*', '/', ':', '<', '>', '?', '\\', '|'
              };
 
-            //var invalidChars = new[] { '|' };
             foreach (var invalidOnExFat in invalidChars)
             {
                 var filenameInvalidOnExFat = "valid" + invalidOnExFat + "filename";
@@ -43,8 +48,17 @@ namespace SanitizeFilenameTests
                 var sanitizedFilename = filenameInvalidOnExFat.SanitizeFilename();
                 var actualSanitized = FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename);
                 Assert.That(actualSanitized, Is.True,
-                    $"Expected writing sanitized file with name '{filenameInvalidOnExFat.SanitizeFilename()}' to succeed on exFAT, but it failed.");
+                    $"Expected writing sanitized file with name '{sanitizedFilename}' to succeed on exFAT, but it failed.");
             }
+        }
+
+        private static bool IsRunningAsAdministrator()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return false;
+            using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
+            var principal = new System.Security.Principal.WindowsPrincipal(identity);
+            return principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
         }
 
         public FileWriteAsserter FileWriteAsserter { get; }

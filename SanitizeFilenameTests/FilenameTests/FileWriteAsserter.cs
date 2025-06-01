@@ -9,6 +9,7 @@ namespace SanitizeFilenameTests
         public FileWriteAsserter(bool createAndUseExFatPartition = false)
         {
             TempPath = Path.Combine(Path.GetTempPath(), "test" + Guid.NewGuid());
+            InitialTempPath = TempPath;
             CreateAndUseExFatPartition = createAndUseExFatPartition;
             if (!Directory.Exists(TempPath))
                 Directory.CreateDirectory(TempPath);
@@ -17,8 +18,10 @@ namespace SanitizeFilenameTests
                 CreateExFatFileSystemIfNeeded(false);
         }
 
+        public string ExfatVhdxPath { get; private set; }
         public string ExfatDrive { get; private set; }
         public string TempPath { get; set; }
+        public string InitialTempPath { get; }
         public bool CreateAndUseExFatPartition { get; }
 
         internal void AssertCollection(List<(string, int)> validFilenames)
@@ -93,6 +96,7 @@ namespace SanitizeFilenameTests
 
                 if (!string.IsNullOrEmpty(exfatDrive))
                 {
+                    ExfatDrive = exfatDrive;
                     TempPath = exfatDrive + @":\test" + Guid.NewGuid();
                     if (!Directory.Exists(TempPath))
                         Directory.CreateDirectory(TempPath);
@@ -134,6 +138,7 @@ $vol.DriveLetter
 
             if (!string.IsNullOrEmpty(exfatDrive))
             {
+                ExfatVhdxPath = vhdxPath;
                 ExfatDrive = exfatDrive;
                 TempPath = exfatDrive + @":\test" + Guid.NewGuid();
                 if (!Directory.Exists(TempPath))
@@ -163,17 +168,15 @@ $vol.DriveLetter
             {
                 if (disposing)
                 {
-                    Directory.Delete(TempPath, true);
-
-                    if (CreateAndUseExFatPartition && !string.IsNullOrEmpty(ExfatDrive))
+                    if (CreateAndUseExFatPartition && !string.IsNullOrEmpty(ExfatVhdxPath))
                     {
-                        // Unmount the exFAT drive
+                        // Unmount the exFAT VHDX by its file path
                         var unmountProcess = new System.Diagnostics.Process
                         {
                             StartInfo = new System.Diagnostics.ProcessStartInfo
                             {
                                 FileName = "powershell",
-                                Arguments = $"-NoProfile -Command \"Dismount-VHD -Path '{ExfatDrive}'\"",
+                                Arguments = $"-NoProfile -Command \"Dismount-VHD -Path '{ExfatVhdxPath}'\"",
                                 RedirectStandardOutput = true,
                                 RedirectStandardError = true,
                                 UseShellExecute = false,
@@ -188,7 +191,13 @@ $vol.DriveLetter
                         {
                             throw new InvalidOperationException($"Failed to dismount exFAT VHD. Exit code: {unmountProcess.ExitCode}. Output: {stdOut} Error: {stdErr}");
                         }
+
+                        if (File.Exists(ExfatVhdxPath))
+                        {
+                            File.Delete(ExfatVhdxPath);
+                        }
                     }
+                    Directory.Delete(InitialTempPath, true);
                 }
 
                 disposedValue = true;
