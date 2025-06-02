@@ -72,6 +72,7 @@ namespace SanitizeFilenameTests
 
             // Only create if not already created in this session
             string vhdxPath = TempPath + @"\exfat-test.vhdx";
+            string vhdxFileName = System.IO.Path.GetFileName(vhdxPath);
             // exFAT volume label max length is 11 characters
             string exfatLabel = Guid.NewGuid().ToString("N").Substring(0, 11);
             string? exfatDrive = null;
@@ -111,19 +112,20 @@ if (-not (Test-Path '{vhdxPath}')) {{
 }}
 Mount-VHD -Path '{vhdxPath}' | Out-Null
 Start-Sleep -Seconds 2
-$disk = Get-Disk | Where-Object {{ $_.Location -like '*{System.IO.Path.GetFileName(vhdxPath)}*' }}
+$disk = Get-Disk | Where-Object {{ $_.Location -like '*{vhdxFileName}*' }}
 if ($disk) {{
     if ($disk.PartitionStyle -eq 'RAW') {{
-        Initialize-Disk -Number $disk.Number -PartitionStyle GPT -PassThru | Out-Null
+        Initialize-Disk -Number $disk.Number -PartitionStyle GPT -PassThru -ErrorAction SilentlyContinue | Out-Null
     }}
+Start-Sleep -Seconds 5
     $partition = Get-Partition -DiskNumber $disk.Number | Where-Object {{ $_.Type -ne 'Reserved' }} | Select-Object -First 1
     if (-not $partition) {{
         $partition = New-Partition -DiskNumber $disk.Number -UseMaximumSize -AssignDriveLetter
     }}
-    $vol = Get-Volume -DiskNumber $disk.Number | Where-Object {{ $_.FileSystem -eq 'exFAT' }}
-    if (-not $vol) {{
+    $vol = $partition | Get-Volume
+    if ($vol.FileSystem -ne 'exFAT') {{
         Format-Volume -Partition $partition -FileSystem exFAT -NewFileSystemLabel '{exfatLabel}' -Confirm:$false | Out-Null
-        $vol = Get-Volume -DiskNumber $disk.Number | Where-Object {{ $_.FileSystem -eq 'exFAT' }}
+        $vol = $partition | Get-Volume
     }}
     $vol.DriveLetter
 }}
@@ -136,27 +138,26 @@ if ($disk) {{
                     FileName = "powershell",
                     Arguments = $"-NoProfile -Command \"{psScript.Replace("\"", "`\"")}\"",
                     RedirectStandardOutput = true,
+                    RedirectStandardError = true,
                     UseShellExecute = false,
                     CreateNoWindow = true
                 }
             };
             process.Start();
-            exfatDrive = process.StandardOutput.ReadToEnd().Trim();
+            string stdOut = process.StandardOutput.ReadToEnd().Trim();
+            string stdErr = process.StandardError.ReadToEnd();
             process.WaitForExit();
-            if (process.ExitCode != 0)
+            if (process.ExitCode != 0 || !string.IsNullOrEmpty(stdErr))
             {
-                string stdOut = exfatDrive;
-                string stdErr = process.StandardError != null ? process.StandardError.ReadToEnd() : "";
                 throw new InvalidOperationException(
                     $"Failed to create or mount exFAT VHDX for testing. Exit code: {process.ExitCode}. Output: {stdOut} Error: {stdErr}"
                 );
             }
 
-            if (!string.IsNullOrEmpty(exfatDrive))
+            if (!string.IsNullOrEmpty(stdOut))
             {
                 ExfatVhdxPath = vhdxPath;
-                ExfatDrive = exfatDrive;
-                TempPath = exfatDrive + @":\test" + Guid.NewGuid();
+                TempPath = stdOut + @":\test" + Guid.NewGuid();
                 if (!Directory.Exists(TempPath))
                     Directory.CreateDirectory(TempPath);
             }

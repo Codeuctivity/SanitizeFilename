@@ -5,14 +5,13 @@ namespace SanitizeFilenameTests
 {
     internal class WindowsExFatSpecificTests : SanitizeFilenamesTestsBase
     {
-
-
         [OneTimeTearDown]
         public void TearDown()
         {
             FileWriteAsserter?.Dispose();
         }
 
+        // will fail if an explorer window is open 
         [Test]
         public void ShouldBehaviorSpecificOnExFat()
         {
