@@ -25,9 +25,6 @@ jobs:
           dotnet-version: |
             8.0.x
             9.0.x
-      - name: Install exfatprogs (mkfs.exfat) on Ubuntu
-        if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y exfat-fuse exfatprogs
       - name: Print OS name
         shell: bash
         run: |

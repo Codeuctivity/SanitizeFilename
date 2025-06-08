@@ -2,7 +2,6 @@
 
 namespace SanitizeFilenameTests
 {
-
     public class FileWriteAsserter : IDisposable
     {
         private bool disposedValue;
@@ -33,9 +32,6 @@ namespace SanitizeFilenameTests
                     }
                 }
             });
-
-            //invalidFilenames.Add(("test", 1));
-            //invalidFilenames.Add(("test", 2));
 
             Assert.That(invalidFilenames.OrderBy(x => x.Item2), Is.Empty, GenerateAssertionMessage(invalidFilenames));
         }
@@ -78,12 +74,8 @@ namespace SanitizeFilenameTests
                 if (disposing)
                 {
                     if (DisposableVhdxPath != null)
-                    {
                         ExFatFileWriteAsserterFactory.UnmountAndDeleteImage(DisposableVhdxPath);
-
-                    }
                     else
-
                         Directory.Delete(TempPath, true);
                 }
 

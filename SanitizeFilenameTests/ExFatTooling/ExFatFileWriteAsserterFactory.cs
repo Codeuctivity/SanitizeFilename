@@ -25,7 +25,6 @@ namespace SanitizeFilenameTests.ExFatTooling
                 return null;
             }
 
-            // Skip if not running as administrator
             if (!IsRunningAsAdministrator())
             {
                 if (TryGetExFatPartition(out string path))
@@ -47,13 +46,10 @@ namespace SanitizeFilenameTests.ExFatTooling
             path = string.Empty;
             try
             {
-                // Get all drives
                 foreach (var drive in DriveInfo.GetDrives())
                 {
-                    // Check for exFAT file system and that the drive is ready
                     if (drive.IsReady && string.Equals(drive.DriveFormat, "exFAT", StringComparison.OrdinalIgnoreCase))
                     {
-                        // Use a subdirectory to avoid polluting the root
                         string testDir = Path.Combine(drive.RootDirectory.FullName, "test" + Guid.NewGuid().ToString("N"));
                         Directory.CreateDirectory(testDir);
                         path = testDir;

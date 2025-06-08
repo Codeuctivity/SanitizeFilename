@@ -49,10 +49,12 @@ Restrictions of Windows, Linux and OsX are alle combined to an replacement patte
 
 ## Test setup
 
-The ExFat specific tests are skipped as long as no ExFat filesystem is available. Running as admin will automaticly do that for you. Use this snippet to enable them:
+The ExFat specific tests are skipped as long as no ExFat filesystem is available. Use this snippet to enable them:
 
 ```powershell
-$vhdpath = 'c:\temp\bla1.vhd'
+$vhdpath = 'C:\temp\ExFatTestContainer.vhd'
 $vhdsize = 100MB
 New-VHD -Path $vhdpath -Dynamic -SizeBytes $vhdsize | Mount-VHD -Passthru |Initialize-Disk -Passthru |New-Partition -AssignDriveLetter -UseMaximumSize |Format-Volume -FileSystem 'exFAT' -Confirm:$false  -NewFileSystemLabel '{exfatLabel}' -Force|Out-Null
 ```
+
+Running as admin will automaticly create and mount a Exfat drive while tests are running.
