@@ -1,42 +1,34 @@
 ﻿using Codeuctivity;
-using System.Runtime.InteropServices;
+using SanitizeFilenameTests.ExFatTooling;
 
 namespace SanitizeFilenameTests
 {
     internal class WindowsExFatSpecificTests : SanitizeFilenamesTestsBase
     {
+        public string GetOrCreateExFatPartitionFailReason { get; set; }
+        private FileWriteAsserter? ExFatFileWriteAsserter { get; set; }
+
+        [OneTimeSetUp]
+        public void SetUp()
+        {
+            ExFatFileWriteAsserter = ExFatFileWriteAsserterFactory.TryGetOrCreateExFatPartition(out var reason);
+            GetOrCreateExFatPartitionFailReason = reason;
+        }
+
         [OneTimeTearDown]
         public void TearDown()
         {
-            FileWriteAsserter?.Dispose();
+            ExFatFileWriteAsserter?.Dispose();
         }
 
         // will fail if an explorer window is open 
-        [Test]
+        [Test, Platform("Win")]
         public void ShouldBehaviorSpecificOnExFat()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (ExFatFileWriteAsserter == null)
             {
-                Assert.Ignore("CustomFsFileWriteAsserter is only applicable on Windows.");
+                Assert.Ignore(GetOrCreateExFatPartitionFailReason);
             }
-
-            // Skip if running on Windows ARM
-            if (RuntimeInformation.OSArchitecture == Architecture.Arm || RuntimeInformation.OSArchitecture == Architecture.Arm64)
-            {
-                Assert.Ignore("Test is skipped on Windows ARM because VHD mounting is not supported.");
-            }
-
-            // Skip if not running as administrator
-            if (!IsRunningAsAdministrator())
-            {
-                Assert.Ignore("Test requires administrator privileges to create and mount exFAT VHD.");
-            }
-
-            if (FileWriteAsserter == null)
-            {
-                FileWriteAsserter = new FileWriteAsserter(true);
-            }
-
 
             //https://learn.microsoft.com/en-us/windows/win32/fileio/exfat-specification#table-35-invalid-filename-characters
             var invalidChars = new[] {
@@ -50,27 +42,14 @@ namespace SanitizeFilenameTests
             foreach (var invalidOnExFat in invalidChars)
             {
                 var filenameInvalidOnExFat = "valid" + invalidOnExFat + "filename";
-                var actual = FileWriteAsserter.TryWriteFileToTempDirectory(filenameInvalidOnExFat);
+                var actual = ExFatFileWriteAsserter.TryWriteFileToTempDirectory(filenameInvalidOnExFat);
                 Assert.That(actual, Is.False,
                     $"Expected writing file with name '{filenameInvalidOnExFat}' to fail on exFAT, but it succeeded.");
                 var sanitizedFilename = filenameInvalidOnExFat.SanitizeFilename();
-                var actualSanitized = FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename);
+                var actualSanitized = ExFatFileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename);
                 Assert.That(actualSanitized, Is.True,
                     $"Expected writing sanitized file with name '{sanitizedFilename}' to succeed on exFAT, but it failed.");
             }
         }
-
-        private static bool IsRunningAsAdministrator()
-        {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return false;
-            using var identity = System.Security.Principal.WindowsIdentity.GetCurrent();
-            var principal = new System.Security.Principal.WindowsPrincipal(identity);
-            return principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
-        }
-
-#pragma warning disable NUnit1032 // An IDisposable field/property should be Disposed in a TearDown method
-        private FileWriteAsserter? FileWriteAsserter { get; set; }
-#pragma warning restore NUnit1032 // An IDisposable field/property should be Disposed in a TearDown method
     }
 }

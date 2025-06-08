@@ -46,3 +46,13 @@ Restrictions of Windows, Linux and OsX are alle combined to an replacement patte
 - Edge case Unicode sanitization: [.NET Framework](https://learn.microsoft.com/en-us/dotnet/framework/whats-new/#character-categories) uses Unicode 8.0, while .NET 8+ uses a newer version to detect unpaired surrogates and unassigned code points.
   - This is relevant when dealing with emoticons.
   - For example, [&#34;💏🏻&#34;](https://emojipedia.org/kiss-light-skin-tone) will be sanitized when running on .NET Framework 4.8, while it is supported as a valid filename on modern filesystems
+
+## Test setup
+
+The ExFat specific tests are skipped as long as no ExFat filesystem is available. Running as admin will automaticly do that for you. Use this snippet to enable them:
+
+```powershell
+$vhdpath = 'c:\temp\bla1.vhd'
+$vhdsize = 100MB
+New-VHD -Path $vhdpath -Dynamic -SizeBytes $vhdsize | Mount-VHD -Passthru |Initialize-Disk -Passthru |New-Partition -AssignDriveLetter -UseMaximumSize |Format-Volume -FileSystem 'exFAT' -Confirm:$false  -NewFileSystemLabel '{exfatLabel}' -Force|Out-Null
+```
