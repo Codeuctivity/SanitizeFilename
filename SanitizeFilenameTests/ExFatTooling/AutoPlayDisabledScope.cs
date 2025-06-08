@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using System.Runtime.InteropServices;
 
 public class AutoPlayDisabledScope : IDisposable
 {
@@ -16,6 +17,12 @@ public class AutoPlayDisabledScope : IDisposable
     /// </summary>
     public AutoPlayDisabledScope()
     {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            AutoPlayerInitialState = false;
+            return;
+        }
+
         object? current = Registry.GetValue(AutoPlayRegKey, AutoPlayRegValue, null);
         if (current is int value && value == DisableAllAutoPlay)
         {
@@ -34,6 +41,11 @@ public class AutoPlayDisabledScope : IDisposable
     /// </summary>
     public static void RestoreAutoPlay()
     {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return;
+        }
+
         if (_originalValue.HasValue)
         {
             Registry.SetValue(AutoPlayRegKey, AutoPlayRegValue, _originalValue.Value, RegistryValueKind.DWord);

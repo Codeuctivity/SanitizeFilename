@@ -52,7 +52,7 @@ namespace SanitizeFilenameTests
 
             if (IsRunningOnNet4x())
             {
-                Assert.That(ex.Message, Is.EqualTo("Replacement '*' is invalid for Windows\r\nParameter name: replacement"));
+                Assert.That(ex?.Message, Is.EqualTo("Replacement '*' is invalid for Windows\r\nParameter name: replacement"));
                 return;
             }
 
@@ -186,7 +186,9 @@ namespace SanitizeFilenameTests
         [TestCase("💏🏻", 13, "__", "Unicode 13.1 example https://emojipedia.org/kiss-light-skin-tone but is an https://emojipedia.org/emoji-modifier-sequence combining unicode a codpage from v8 and v6 -> that is not touched by ")]
         [TestCase("", null, null, " Private Use Area (PUA) character that is supported on iOS and macOS https://emojipedia.org/apple-logo")]
         [TestCase("⛷️", 5, null, "Unicode 5.2  example https://emojipedia.org/skier")]
+#pragma warning disable IDE0060 // unicodeVersionNote is used for documentation purposes only
         public void ShouldNotBeTouchedBySanitizer(string unicodeSpecificEmoticon, int? unicodeVersion, string? expectedNetFramework, string unicodeVersionNote)
+#pragma warning restore IDE0060 // unicodeVersionNote is used for documentation purposes only
         {
             var expected = unicodeSpecificEmoticon;
 
@@ -213,6 +215,7 @@ namespace SanitizeFilenameTests
         [TestCase("🫠", "Unicode 14 example https://emojipedia.org/melting-face")]
         [TestCase("🫥", "Unicode 14 example https://emojipedia.org/dotted-line-face")]
         [TestCase("🪿", "Unicode 15 example https://emojipedia.org/goose")]
+#pragma warning disable IDE0060 // unicodeVersionNote is used for documentation purposes only
         public void ShouldSanitizeUnicodeVersion9Plus(string unicodeSpecificEmoticon, string unicodeVersion)
         {
             var sanitizedFilename = unicodeSpecificEmoticon.SanitizeFilename();
@@ -233,4 +236,5 @@ namespace SanitizeFilenameTests
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(unicodeSpecificEmoticon), Is.Not.EqualTo(RuntimeInformation.IsOSPlatform(OSPlatform.OSX)));
         }
     }
+#pragma warning restore IDE0060 // unicodeVersionNote is used for documentation purposes only
 }

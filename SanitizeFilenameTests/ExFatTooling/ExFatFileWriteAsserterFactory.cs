@@ -39,7 +39,6 @@ namespace SanitizeFilenameTests.ExFatTooling
             var exFatPartitionCreateInfo = CreateAndMountExFatPartition(imageTempPath);
             FileWriteAsserter fileWriteAsserter = new(exFatPartitionCreateInfo.TempPathInExFatPartition, exFatPartitionCreateInfo.VhdxPath);
 
-            
             return fileWriteAsserter;
         }
 
