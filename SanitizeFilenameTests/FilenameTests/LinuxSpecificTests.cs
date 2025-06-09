@@ -12,8 +12,7 @@ namespace SanitizeFilenameTests
         [OneTimeTearDown]
         public void TearDown()
         {
-            if (Directory.Exists(FileWriteAsserter.TempPath))
-                Directory.Delete(FileWriteAsserter.TempPath, true);
+            FileWriteAsserter.Dispose();
         }
 
         [Test]

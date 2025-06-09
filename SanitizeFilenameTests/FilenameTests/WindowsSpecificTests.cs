@@ -12,8 +12,7 @@ namespace SanitizeFilenameTests
         [OneTimeTearDown]
         public void TearDown()
         {
-            if (Directory.Exists(FileWriteAsserter.TempPath))
-                Directory.Delete(FileWriteAsserter.TempPath, true);
+            FileWriteAsserter.Dispose();
         }
 
         public FileWriteAsserter FileWriteAsserter { get; }
@@ -25,7 +24,8 @@ namespace SanitizeFilenameTests
             {
                 var filenameInvalidOnWindows = "valid" + invalidOnWindows + "filename";
                 var actual = FileWriteAsserter.TryWriteFileToTempDirectory(filenameInvalidOnWindows);
-                Assert.That(actual, Is.False);
+                Assert.That(actual, Is.False,
+                    $"Expected writing file with name '{filenameInvalidOnWindows}' to fail on Windows, but it succeeded.");
             }
         }
     }
