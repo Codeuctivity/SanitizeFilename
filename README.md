@@ -1,10 +1,10 @@
 # SanitizeFilename
 
-Sanitizes file and directory names to ensure compatibility with Windows (NTFS), Linux (ext4), and macOS (APFS).
+Sanitizes file and directory names to ensure compatibility with Windows (NTFS & exFat), Linux (ext4), and macOS (APFS).
 
 [![.NET build and test](https://github.com/Codeuctivity/SanitizeFilename/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Codeuctivity/SanitizeFilename/actions/workflows/dotnet.yml) [![NuGet](https://img.shields.io/nuget/v/Codeuctivity.SanitizeFilename.svg)](https://www.nuget.org/packages/Codeuctivity.SanitizeFilename/) [![Donate](https://img.shields.io/static/v1?label=Paypal&message=Donate&color=informational)](https://www.paypal.com/donate?hosted_button_id=7M7UFMMRTS7UE)
 
-Implements rules documented by [Microsoft](https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions) + file name length truncation to 255 bytes - common on [many modern](https://en.wikipedia.org/wiki/Comparison_of_file_systems) file systems. Runs on any .NET platform.
+Implements rules documented by [Microsoft](https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions) + file name length truncation to 255 bytes, which is common on [many modern](https://en.wikipedia.org/wiki/Comparison_of_file_systems) file systems. Runs on any .NET platform.
 
 ## Example
 
@@ -25,19 +25,19 @@ Console.WriteLine($"SafeFileNameOptionalReplacementChar: {safeFileNameOptionalRe
 
 ## Rules
 
-Restrictions of Windows, Linux and OsX are alle combined to an replacement pattern, that will sanitize any filename to be compatible with any of the OS and common filesystem restrictions.
+Restrictions of Windows, Linux and macOS are all combined to an replacement pattern, that will sanitize any filename to be compatible with any of the OS and common filesystem restrictions.
 
 | Pattern                       | OS that don't support pattern | OS that support pattern | Example            |
 | ----------------------------- | ----------------------------- | ----------------------- | ------------------ |
-| Reserved keywords             | Windows                       | Linux, OsX             | CON, PRN, AUX, ... |
-| Reserved chars                | Linux, Windows, OsX           |                         | '/', '\0'          |
-| Reserved chars windows       | Windows                       | Linux, OsX             | '\\\', '""', ...   |
-| Invalid trailing chars        | Windows                       | Linux, OsX             | ' ', ','           |
-| Max length Linux              | Linux,                        | [Windows, OsX](https://github.com/Codeuctivity/SanitizeFilename/blob/387103492098cd9cef0f8596a96dc6c2dfe2eba3/SanitizeFilenameTests/FilenameTests/LinuxSpecificTests.cs#L20)          | 255 bytes          |
-| Max length                    | Linux, Windows, OsX           |                         | 255 chars          |
-| Unpaired Unicode surrogates   | OsX, Linux                    | Windows                 | U+D800 - U+DFFF    |
-| NotAssigned to Unicode        | OsX                           | Linux, Windows          | U+67803, ...       |
-| "New" Unicode (today 16 + 17) | OsX                           | Linux, Windows          | 🫩 (U+1FAE9), ...  |
+| Reserved keywords             | Windows                       | Linux, macOS             | CON, PRN, AUX, ... |
+| Reserved chars                | Linux, Windows, macOS           |                         | '/', '\0'          |
+| Reserved chars windows       | Windows                       | Linux, macOS             | '\\\', '""', ...   |
+| Invalid trailing chars        | Windows                       | Linux, macOS             | ' ', ','           |
+| Max length Linux              | Linux,                        | [Windows, macOS](https://github.com/Codeuctivity/SanitizeFilename/blob/387103492098cd9cef0f8596a96dc6c2dfe2eba3/SanitizeFilenameTests/FilenameTests/LinuxSpecificTests.cs#L20)          | 255 bytes          |
+| Max length                    | Linux, Windows, macOS           |                         | 255 chars          |
+| Unpaired Unicode surrogates   | macOS, Linux                    | Windows                 | U+D800 - U+DFFF    |
+| NotAssigned to Unicode        | macOS                           | Linux, Windows          | U+67803, ...       |
+| "New" Unicode (today 16 + 17) | macOS                           | Linux, Windows          | 🫩 (U+1FAE9), ...  |
 
 ## .NET framework support
 
@@ -49,12 +49,40 @@ Restrictions of Windows, Linux and OsX are alle combined to an replacement patte
 
 ## Test setup
 
-The ExFat specific tests are skipped as long as no ExFat filesystem is available. Use this snippet to enable them:
+The exFat specific tests are skipped as long as no exFat filesystem is available. Use this snippet to enable them:
+
+### Windows
 
 ```powershell
-$vhdpath = 'C:\temp\ExFatTestContainer.vhd'
+$vhdpath = [System.IO.Path]::Combine($env:TEMP, 'ExFatTestContainer.vhd')
+Remove-Item $vhdpath -ErrorAction SilentlyContinue
 $vhdsize = 100MB
 New-VHD -Path $vhdpath -Dynamic -SizeBytes $vhdsize | Mount-VHD -Passthru |Initialize-Disk -Passthru |New-Partition -AssignDriveLetter -UseMaximumSize |Format-Volume -FileSystem 'exFAT' -Confirm:$false  -NewFileSystemLabel '{exfatLabel}' -Force|Out-Null
 ```
 
-Running as admin will automaticly create and mount a Exfat drive while tests are running.
+Running as admin will automatically create and mount a exFat drive while tests are running.
+
+### WSL / Linux
+
+```powershell
+wsl --set-default-version 2
+wsl --update
+wsl --install -d Ubuntu
+```
+
+Then run the following commands in the WSL terminal:
+```bash
+#https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu-install?tabs=dotnet9&pivots=os-linux-ubuntu-2404
+sudo add-apt-repository ppa:dotnet/backports
+sudo apt update
+sudo apt install -y exfatprogs exfat-fuse dotnet-sdk-9.0
+sudo apt install mono-complete
+
+# Create test drive file
+dd if=/dev/zero of=~/exfat_test_drive.img bs=1M count=100
+mkfs.exfat ~/exfat_test_drive.img
+mkdir -p ~/exfat_test_mount
+# that will fail on ubuntu/wsl
+#sudo mount -t exfat -o loop ~/exfat_test_drive.img ~/exfat_test_mount
+sudo mount -t exfat-fuse -o loop ~/exfat_test_drive.img ~/exfat_test_mount
+```

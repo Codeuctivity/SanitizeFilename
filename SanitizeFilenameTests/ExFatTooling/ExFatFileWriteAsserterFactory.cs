@@ -46,15 +46,24 @@ namespace SanitizeFilenameTests.ExFatTooling
             path = string.Empty;
             try
             {
-                foreach (var drive in DriveInfo.GetDrives())
+                var exFatDrives = DriveInfo.GetDrives().ToList();
+                var exFatDrive = DriveInfo.GetDrives().FirstOrDefault(fs => fs.IsReady&& fs.DriveFormat == "exFAT");
+                var fuseDrive = DriveInfo.GetDrives().FirstOrDefault(fs => fs.IsReady && fs.DriveFormat == "fuse" && fs.Name.Contains("exfat_test_mount") );
+
+                if (exFatDrive != null)
                 {
-                    if (drive.IsReady && string.Equals(drive.DriveFormat, "exFAT", StringComparison.OrdinalIgnoreCase))
-                    {
-                        string testDir = Path.Combine(drive.RootDirectory.FullName, "test" + Guid.NewGuid().ToString("N"));
-                        Directory.CreateDirectory(testDir);
-                        path = testDir;
-                        return true;
-                    }
+                    string testDir = Path.Combine(exFatDrive.RootDirectory.FullName, "test" + Guid.NewGuid().ToString("N"));
+                    Directory.CreateDirectory(testDir);
+                    path = testDir;
+                    return true;
+                }
+
+                if (fuseDrive != null)
+                {
+                    string testDir = Path.Combine(fuseDrive.RootDirectory.FullName, "test" + Guid.NewGuid().ToString("N"));
+                    Directory.CreateDirectory(testDir);
+                    path = testDir;
+                    return true;
                 }
             }
             catch
@@ -161,6 +170,23 @@ $partition.DriveLetter
                     File.Delete(exfatVhdxPath);
                 }
             }
+        }
+
+        internal static bool SystemIsSupported()
+        {
+            // if running on windows and not ARM, we can use exFat tooling
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (RuntimeInformation.OSArchitecture != Architecture.Arm && RuntimeInformation.OSArchitecture != Architecture.Arm64))
+            {
+                return true;
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                // Linux and OSX are not supported for exFAT tooling
+                return true;
+            }
+
+            return false;
         }
     }
 }

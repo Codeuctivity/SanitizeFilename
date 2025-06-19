@@ -21,7 +21,6 @@ namespace SanitizeFilenameTests
             ExFatFileWriteAsserter?.Dispose();
         }
 
-        // will fail if an explorer window is open 
         [Test, Platform("Win")]
         public void ShouldBehaviorSpecificOnExFat()
         {
