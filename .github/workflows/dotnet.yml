@@ -35,6 +35,9 @@ jobs:
       - name: Setup and show filesystem on ubuntu
         if: runner.os == 'Linux'
         run: |
+            sudo add-apt-repository ppa:dotnet/backports
+            sudo apt update
+            sudo apt install -y exfatprogs exfat-fuse
             dd if=/dev/zero of=~/exfat_test_drive.img bs=1M count=100
             mkfs.exfat ~/exfat_test_drive.img
             mkdir -p ~/exfat_test_mount
