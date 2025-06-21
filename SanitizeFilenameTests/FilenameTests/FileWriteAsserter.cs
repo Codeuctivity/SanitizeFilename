@@ -74,7 +74,7 @@ namespace SanitizeFilenameTests
                 if (disposing)
                 {
                     if (DisposableVhdxPath != null)
-                        ExFatFileWriteAsserterFactory.UnmountAndDeleteImage(DisposableVhdxPath);
+                        ExFatFileWriteAsserter.UnmountAndDeleteImage(DisposableVhdxPath);
                     else
                         Directory.Delete(TempPath, true);
                 }

@@ -2,7 +2,7 @@
 
 namespace SanitizeFilenameTests.ExFatTooling
 {
-    public class ExFatFileWriteAsserterFactory : FileWriteAsserter
+    public class ExFatFileWriteAsserter : FileWriteAsserter
     {
         public static FileWriteAsserter? TryGetOrCreateExFatPartition(out string reason)
         {
@@ -187,6 +187,18 @@ $partition.DriveLetter
             }
 
             return false;
+        }
+
+        internal static void Assert(bool expected, FileWriteAsserter? exFatFileWriteAsserter, string fileNameTooLongForLinux, string getOrCreateExFatPartitionFailReason, string assertMessage)
+        {
+            if (!ExFatFileWriteAsserter.SystemIsSupported())
+                return;
+
+
+            NUnit.Framework.Assert.That(exFatFileWriteAsserter, Is.Not.Null, "ExFatFileWriteAsserter should not be null if the system is supported and the partition was created successfully. Setup a exFat drive to run this test or ignore the outcome here, it will be setup and tested on github action runs.");
+
+            var actualExFat = exFatFileWriteAsserter?.TryWriteFileToTempDirectory(fileNameTooLongForLinux);
+            NUnit.Framework.Assert.That(actualExFat, Is.EqualTo(expected), assertMessage);
         }
     }
 }

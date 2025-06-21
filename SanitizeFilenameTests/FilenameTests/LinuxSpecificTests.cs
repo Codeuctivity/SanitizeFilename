@@ -16,7 +16,7 @@ namespace SanitizeFilenameTests
         [OneTimeSetUp]
         public void SetUp()
         {
-            ExFatFileWriteAsserter = ExFatFileWriteAsserterFactory.TryGetOrCreateExFatPartition(out var reason);
+            ExFatFileWriteAsserter = ExFatTooling.ExFatFileWriteAsserter.TryGetOrCreateExFatPartition(out var reason);
             GetOrCreateExFatPartitionFailReason = reason;
         }
 
@@ -40,11 +40,7 @@ namespace SanitizeFilenameTests
             var actual = FileWriteAsserter.TryWriteFileToTempDirectory(fileNameTooLongForLinux);
             Assert.That(actual, Is.EqualTo(expected), "Filenames that exceed utf-8 255 byte length are expected to be valid on Windows and OsX (beyond 255 chars) and to be invalid on Linux. This expectation failed.");
 
-            if (!ExFatFileWriteAsserterFactory.SystemIsSupported())
-                return;
-
-            var actualExFat = ExFatFileWriteAsserter?.TryWriteFileToTempDirectory(fileNameTooLongForLinux);
-            Assert.That(actualExFat, Is.EqualTo(expected), "Filenames that exceed utf-8 255 byte length are expected to be valid on Windows and OsX (beyond 255 chars) and to be invalid on Linux. This expectation failed.");
+            ExFatTooling.ExFatFileWriteAsserter.Assert(expected, ExFatFileWriteAsserter, fileNameTooLongForLinux, GetOrCreateExFatPartitionFailReason, "Filenames that exceed utf-8 255 byte length are expected to be valid on Windows and OsX (beyond 255 chars) and to be invalid on Linux. This expectation failed using exFat.");
         }
 
         public FileWriteAsserter FileWriteAsserter { get; }

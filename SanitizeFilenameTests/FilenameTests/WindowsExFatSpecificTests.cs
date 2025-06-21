@@ -11,7 +11,7 @@ namespace SanitizeFilenameTests
         [OneTimeSetUp]
         public void SetUp()
         {
-            ExFatFileWriteAsserter = ExFatFileWriteAsserterFactory.TryGetOrCreateExFatPartition(out var reason);
+            ExFatFileWriteAsserter = ExFatTooling.ExFatFileWriteAsserter.TryGetOrCreateExFatPartition(out var reason);
             GetOrCreateExFatPartitionFailReason = reason;
         }
 
