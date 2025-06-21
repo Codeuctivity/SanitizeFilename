@@ -47,8 +47,8 @@ namespace SanitizeFilenameTests.ExFatTooling
             try
             {
                 var exFatDrives = DriveInfo.GetDrives().ToList();
-                var exFatDrive = DriveInfo.GetDrives().FirstOrDefault(fs => fs.IsReady&& fs.DriveFormat == "exFAT");
-                var fuseDrive = DriveInfo.GetDrives().FirstOrDefault(fs => fs.IsReady && fs.DriveFormat == "fuse" && fs.Name.Contains("exfat_test_mount") );
+                var exFatDrive = DriveInfo.GetDrives().FirstOrDefault(fs => fs.IsReady && fs.DriveFormat == "exFAT");
+                var fuseDrive = DriveInfo.GetDrives().FirstOrDefault(fs => fs.IsReady && fs.DriveFormat == "fuse" && fs.Name.Contains("exfat_test_mount"));
 
                 if (exFatDrive != null)
                 {

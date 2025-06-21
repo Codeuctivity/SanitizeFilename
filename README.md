@@ -75,14 +75,19 @@ Then run the following commands in the WSL terminal:
 #https://learn.microsoft.com/en-us/dotnet/core/install/linux-ubuntu-install?tabs=dotnet9&pivots=os-linux-ubuntu-2404
 sudo add-apt-repository ppa:dotnet/backports
 sudo apt update
-sudo apt install -y exfatprogs exfat-fuse dotnet-sdk-9.0
-sudo apt install mono-complete
+sudo apt install -y exfatprogs exfat-fuse dotnet-sdk-9.0 mono-complete ntfs-3g
 
-# Create test drive file
+# Create exFat test drive file
 dd if=/dev/zero of=~/exfat_test_drive.img bs=1M count=100
 mkfs.exfat ~/exfat_test_drive.img
 mkdir -p ~/exfat_test_mount
 # that will fail on ubuntu/wsl
-#sudo mount -t exfat -o loop ~/exfat_test_drive.img ~/exfat_test_mount
+# sudo mount -t exfat -o loop ~/exfat_test_drive.img ~/exfat_test_mount
 sudo mount -t exfat-fuse -o loop ~/exfat_test_drive.img ~/exfat_test_mount
+
+# Create NTFS test drive file
+dd if=/dev/zero of=~/ntfs_test_drive.img bs=1M count=100
+sudo mkfs.ntfs -F -s 4096 ~/ntfs_test_drive.img
+mkdir -p ~/ntfs_test_mount
+sudo mount -o loop -t ntfs-3g ~/ntfs_test_drive.img ~/ntfs_test_mount
 ```

@@ -41,12 +41,10 @@ namespace SanitizeFilenameTests
             Assert.That(actual, Is.EqualTo(expected), "Filenames that exceed utf-8 255 byte length are expected to be valid on Windows and OsX (beyond 255 chars) and to be invalid on Linux. This expectation failed.");
 
             if (!ExFatFileWriteAsserterFactory.SystemIsSupported())
-            {
                 return;
-            }
 
             var actualExFat = ExFatFileWriteAsserter?.TryWriteFileToTempDirectory(fileNameTooLongForLinux);
-            Assert.That(actualExFat, Is.EqualTo(expected), "Filenames that exceed utf-8 255 byte length are expected to be valid on exFat (beyond 255 chars). This expectation failed.");
+            Assert.That(actualExFat, Is.EqualTo(expected), "Filenames that exceed utf-8 255 byte length are expected to be valid on exFat + windows, but invalid on exFat + Linux (beyond 255 chars). This expectation failed.");
         }
 
         public FileWriteAsserter FileWriteAsserter { get; }
