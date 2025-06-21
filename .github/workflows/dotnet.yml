@@ -32,9 +32,16 @@ jobs:
       - name: Show filesystem on windows
         if: runner.os == 'Windows'
         run: Get-Volume
-      - name: Show filesystem on ubuntu
+      - name: Setup and show filesystem on ubuntu
         if: runner.os == 'Linux'
-        run: df -h
+        run: |
+            dd if=/dev/zero of=~/exfat_test_drive.img bs=1M count=100
+            mkfs.exfat ~/exfat_test_drive.img
+            mkdir -p ~/exfat_test_mount
+            # that will fail on ubuntu/wsl
+            # sudo mount -t exfat -o loop ~/exfat_test_drive.img ~/exfat_test_mount
+            sudo mount -t exfat-fuse -o loop ~/exfat_test_drive.img ~/exfat_test_mount
+            df -h
       - name: Show filesystem on macos
         if: runner.os == 'MacOs'
         run: df -h
