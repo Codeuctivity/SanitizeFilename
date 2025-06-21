@@ -44,8 +44,7 @@ namespace SanitizeFilenameTests
                 return;
 
             var actualExFat = ExFatFileWriteAsserter?.TryWriteFileToTempDirectory(fileNameTooLongForLinux);
-            // TODO is expected to fail on exFat + Linux + wsl
-            Assert.That(actualExFat, Is.EqualTo(true), "Filenames that exceed utf-8 255 byte length are expected to be valid on exFat (beyond 255 chars). This expectation failed.");
+            Assert.That(actualExFat, Is.EqualTo(expected), "Filenames that exceed utf-8 255 byte length are expected to be valid on Windows and OsX (beyond 255 chars) and to be invalid on Linux. This expectation failed.");
         }
 
         public FileWriteAsserter FileWriteAsserter { get; }
