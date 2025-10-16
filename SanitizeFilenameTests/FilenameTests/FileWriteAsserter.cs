@@ -1,15 +1,22 @@
-﻿namespace SanitizeFilenameTests
+﻿using SanitizeFilenameTests.ExFatTooling;
+
+namespace SanitizeFilenameTests
 {
-    public class FileWriteAsserter
+    public class FileWriteAsserter : IDisposable
     {
-        public FileWriteAsserter()
+        private bool disposedValue;
+
+        public FileWriteAsserter(string? tempPath = null, string? disposableVhdxPath = null)
         {
-            TempPath = Path.Combine(Path.GetTempPath(), "test" + Guid.NewGuid());
+            DisposableVhdxPath = disposableVhdxPath;
+            TempPath = tempPath ?? Path.Combine(Path.GetTempPath(), "test" + Guid.NewGuid());
+
             if (!Directory.Exists(TempPath))
                 Directory.CreateDirectory(TempPath);
         }
 
-        public string TempPath { get; }
+        public string? DisposableVhdxPath { get; }
+        public string TempPath { get; set; }
 
         internal void AssertCollection(List<(string, int)> validFilenames)
         {
@@ -25,9 +32,6 @@
                     }
                 }
             });
-
-            //invalidFilenames.Add(("test", 1));
-            //invalidFilenames.Add(("test", 2));
 
             Assert.That(invalidFilenames.OrderBy(x => x.Item2), Is.Empty, GenerateAssertionMessage(invalidFilenames));
         }
@@ -61,6 +65,28 @@
         private static string GenerateAssertionMessage(List<(string, int)> invalidFilenames)
         {
             return "Invalid chars: " + string.Join(", ", invalidFilenames.Select(x => $"{x.Item2}"));
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    if (DisposableVhdxPath != null)
+                        ExFatFileWriteAsserterFactory.UnmountAndDeleteImage(DisposableVhdxPath);
+                    else
+                        Directory.Delete(TempPath, true);
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

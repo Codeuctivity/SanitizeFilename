@@ -53,7 +53,7 @@ namespace DirectoryNameTests
 
             if (IsRunningOnNet4x())
             {
-                Assert.Pass("Test is not thought to be run with .net framwework / unicode 8");
+                Assert.Pass("Test is not thought to be run with .net framework / unicode 8");
             }
 
             Assert.That(ex.Message, Is.EqualTo("Replacement '*' is invalid for Windows (Parameter 'replacement')"));
@@ -171,7 +171,7 @@ namespace DirectoryNameTests
         {
             if (IsRunningOnNet4x())
             {
-                Assert.Pass("Test is not thought to be run with .net framwework / unicode 8");
+                Assert.Pass("Test is not thought to be run with .net framework / unicode 8");
             }
 
             var invalidDirectoryName = new string('a', countOfFillingAChars) + testSuffix;
