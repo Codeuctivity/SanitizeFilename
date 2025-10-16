@@ -215,6 +215,7 @@ namespace SanitizeFilenameTests
         [TestCase("🫠", "Unicode 14 example https://emojipedia.org/melting-face")]
         [TestCase("🫥", "Unicode 14 example https://emojipedia.org/dotted-line-face")]
         [TestCase("🪿", "Unicode 15 example https://emojipedia.org/goose")]
+        [TestCase("🫩", "Unicode 16 example https://emojipedia.org/face-with-bags-under-eyes")]
 #pragma warning disable IDE0060 // unicodeVersionNote is used for documentation purposes only
         public void ShouldSanitizeUnicodeVersion9Plus(string unicodeSpecificEmoticon, string unicodeVersion)
         {
@@ -226,7 +227,6 @@ namespace SanitizeFilenameTests
 
         // This emoticons are supported by every OS/FS tested, except macOS, because unicode 16 and 17 specific code points are not supported by macOS today
         // Behavior on macos is expected to change over time
-        [TestCase("🫩", "Unicode 16 example https://emojipedia.org/face-with-bags-under-eyes")]
         [TestCase("🫝", "Unicdoe 17 example https://emojipedia.org/apple-core")]
         public void Unicode17SpecificMacoOsBehavior(string unicodeSpecificEmoticon, string unicodeVersion)
         {
