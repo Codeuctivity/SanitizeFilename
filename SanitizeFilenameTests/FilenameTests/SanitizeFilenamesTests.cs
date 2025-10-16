@@ -214,7 +214,7 @@ namespace SanitizeFilenameTests
         [TestCase("🫠", "Unicode 14 example https://emojipedia.org/melting-face")]
         [TestCase("🫥", "Unicode 14 example https://emojipedia.org/dotted-line-face")]
         [TestCase("🪿", "Unicode 15 example https://emojipedia.org/goose")]
-        public void SanitzesUnicodeCodePointsThatAreSupportedByEveryOs(string unicodeSpecificEmoticon, string unicodeVersion)
+        public void SanitizesUnicodeCodePointsThatAreSupportedByEveryOs(string unicodeSpecificEmoticon, string unicodeVersion)
         {
             var sanitizedFilename = unicodeSpecificEmoticon.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(unicodeSpecificEmoticon));
