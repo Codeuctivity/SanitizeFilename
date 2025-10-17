@@ -12,8 +12,7 @@ namespace SanitizeFilenameTests
         [OneTimeTearDown]
         public void TearDown()
         {
-            if (Directory.Exists(FileWriteAsserter.TempPath))
-                Directory.Delete(FileWriteAsserter.TempPath, true);
+            FileWriteAsserter.Dispose();
         }
 
         [Test]
@@ -21,7 +20,7 @@ namespace SanitizeFilenameTests
         {
             if (IsRunningOnNet4x())
             {
-                Assert.Pass("Test is not thought to be run with .net framwework / unicode 8");
+                Assert.Pass("Test is not thought to be run with .net framework / unicode 8");
             }
 
             var expected = !RuntimeInformation.IsOSPlatform(OSPlatform.Linux);

@@ -13,8 +13,7 @@ namespace SanitizeFilenameTests
         [OneTimeTearDown]
         public void TearDown()
         {
-            if (Directory.Exists(FileWriteAsserter.TempPath))
-                Directory.Delete(FileWriteAsserter.TempPath, true);
+            FileWriteAsserter.Dispose();
         }
 
         public FileWriteAsserter FileWriteAsserter { get; }
@@ -47,7 +46,7 @@ namespace SanitizeFilenameTests
         [Test]
         public void ShouldSanitizeValidSurrogatesWithoutFollowingCodepoint()
         {
-            // https://unicodelookup.com/#557056/1  
+            // https://unicodelookup.com/#557056/1
             var oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs = 557056;
             var sanitizedFilenames = new List<(string, int)>();
             string unicodeString = char.ConvertFromUtf32(oneOfManyValuesFoundByRunningEveryPossibleUTF16ValueAgainstMacOs);
@@ -64,7 +63,6 @@ namespace SanitizeFilenameTests
         [TestCase(3315)]
         // U+11F02 Kawi Sign Repha https://codepoints.net/U+11F02
         [TestCase(73474)]
-
         public void MacOsSupportToWriteCodePointsThatFailedOnOsXGibhutRunnersInBeginOf2024(int bogusOsXValue)
         {
             // https://unicodelookup.com/#423939/1

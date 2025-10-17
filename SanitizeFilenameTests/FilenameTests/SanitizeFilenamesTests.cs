@@ -16,8 +16,7 @@ namespace SanitizeFilenameTests
         [OneTimeTearDown]
         public void TearDown()
         {
-            if (Directory.Exists(FileWriteAsserter.TempPath))
-                Directory.Delete(FileWriteAsserter.TempPath, true);
+            FileWriteAsserter.Dispose();
         }
 
         private static readonly string[] InvalidWindowsFileNames = ["invalid<filename", "invalid>filename", "invalid\"filename", "invalid/filename", "invalid\\filename", "invalid|filename", "invalid?filename", "invalid*filename",];
@@ -53,7 +52,7 @@ namespace SanitizeFilenameTests
 
             if (IsRunningOnNet4x())
             {
-                Assert.That(ex.Message, Is.EqualTo("Replacement '*' is invalid for Windows\r\nParameter name: replacement"));
+                Assert.That(ex?.Message, Is.EqualTo("Replacement '*' is invalid for Windows\r\nParameter name: replacement"));
                 return;
             }
 
@@ -172,7 +171,7 @@ namespace SanitizeFilenameTests
         {
             if (IsRunningOnNet4x())
             {
-                Assert.Pass("Test is not thought to be run with .net framwework / unicode 8");
+                Assert.Pass("Test is not thought to be run with .net framework / unicode 8");
             }
 
             var invalidFilename = new string('a', countOfFillingAChars) + testSuffix;
@@ -187,7 +186,9 @@ namespace SanitizeFilenameTests
         [TestCase("💏🏻", 13, "__", "Unicode 13.1 example https://emojipedia.org/kiss-light-skin-tone but is an https://emojipedia.org/emoji-modifier-sequence combining unicode a codpage from v8 and v6 -> that is not touched by ")]
         [TestCase("", null, null, " Private Use Area (PUA) character that is supported on iOS and macOS https://emojipedia.org/apple-logo")]
         [TestCase("⛷️", 5, null, "Unicode 5.2  example https://emojipedia.org/skier")]
+#pragma warning disable IDE0060 // unicodeVersionNote is used for documentation purposes only
         public void ShouldNotBeTouchedBySanitizer(string unicodeSpecificEmoticon, int? unicodeVersion, string? expectedNetFramework, string unicodeVersionNote)
+#pragma warning restore IDE0060 // unicodeVersionNote is used for documentation purposes only
         {
             var expected = unicodeSpecificEmoticon;
 
@@ -202,11 +203,11 @@ namespace SanitizeFilenameTests
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
         }
 
-        // https://learn.microsoft.com/en-us/dotnet/api/system.globalization.charunicodeinfo?view=net-8.0#notes-to-callers 
+        // https://learn.microsoft.com/en-us/dotnet/api/system.globalization.charunicodeinfo?view=net-8.0#notes-to-callers
         // Unicode examples https://emojipedia.org/unicode-17.0
         [TestCase("😀", "Unicode 6.1 example https://emojipedia.org/grinning-face")]
         [TestCase("🚴", "Unicode 6 example https://emojipedia.org/person-biking")]
-        [TestCase("🙂", "Unicode 8 example https://emojipedia.org/person-biking")]
+        [TestCase("🙃", "Unicode 8 example https://emojipedia.org/upside-down-face")]
         [TestCase("🤩", "Unicode 10 example https://emojipedia.org/star-struck#emoji")]
         [TestCase("🥰", "Unicode 11 example https://emojipedia.org/smiling-face-with-hearts")]
         [TestCase("🦿", "Unicode 12 example https://emojipedia.org/mechanical-leg")]
@@ -214,7 +215,8 @@ namespace SanitizeFilenameTests
         [TestCase("🫠", "Unicode 14 example https://emojipedia.org/melting-face")]
         [TestCase("🫥", "Unicode 14 example https://emojipedia.org/dotted-line-face")]
         [TestCase("🪿", "Unicode 15 example https://emojipedia.org/goose")]
-        public void ShouldSanitizeUnicodeVersion9Plus(string unicodeSpecificEmoticon, string unicodeVersion)
+        [TestCase("🫩", "Unicode 16 example https://emojipedia.org/face-with-bags-under-eyes")]
+        public void SanitizesUnicodeCodePointsThatAreSupportedByEveryOs(string unicodeSpecificEmoticon, string unicodeVersion)
         {
             var sanitizedFilename = unicodeSpecificEmoticon.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(unicodeSpecificEmoticon));
@@ -224,9 +226,8 @@ namespace SanitizeFilenameTests
 
         // This emoticons are supported by every OS/FS tested, except macOS, because unicode 16 and 17 specific code points are not supported by macOS today
         // Behavior on macos is expected to change over time
-        [TestCase("🫩", "Unicode 16 example https://emojipedia.org/face-with-bags-under-eyes")]
         [TestCase("🫝", "Unicdoe 17 example https://emojipedia.org/apple-core")]
-        public void Unicode17SpecificMacoOsBehavior(string unicodeSpecificEmoticon, string unicodeVersion)
+        public void UnicodeSpecificMacoOsBehavior(string unicodeSpecificEmoticon, string unicodeVersion)
         {
             var sanitizedFilename = unicodeSpecificEmoticon.SanitizeFilename();
             Assert.That(sanitizedFilename, Is.Not.EqualTo(unicodeSpecificEmoticon));
@@ -234,4 +235,5 @@ namespace SanitizeFilenameTests
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(unicodeSpecificEmoticon), Is.Not.EqualTo(RuntimeInformation.IsOSPlatform(OSPlatform.OSX)));
         }
     }
+#pragma warning restore IDE0060 // unicodeVersionNote is used for documentation purposes only
 }
