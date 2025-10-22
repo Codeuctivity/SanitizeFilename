@@ -37,7 +37,7 @@ Restrictions of Windows, Linux and macOS are all combined to an replacement patt
 | Max length                    | Linux, Windows, macOS           |                         | 255 chars          |
 | Unpaired Unicode surrogates   | macOS, Linux                    | Windows                 | U+D800 - U+DFFF    |
 | NotAssigned to Unicode        | macOS                           | Linux, Windows          | U+67803, ...       |
-| "New" Unicode (today 17+) | macOS                           | Linux, Windows          | 🫩 [🫈](https://emojipedia.org/hairy-creature), ...  |
+| "New" Unicode (today 17+) | macOS                           | Linux, Windows          | [🫈](https://emojipedia.org/hairy-creature), ...  |
 
 ## .NET framework support
 
