@@ -4,7 +4,7 @@ Sanitizes file and directory names to ensure compatibility with Windows (NTFS & 
 
 [![.NET build and test](https://github.com/Codeuctivity/SanitizeFilename/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Codeuctivity/SanitizeFilename/actions/workflows/dotnet.yml) [![NuGet](https://img.shields.io/nuget/v/Codeuctivity.SanitizeFilename.svg)](https://www.nuget.org/packages/Codeuctivity.SanitizeFilename/) [![Donate](https://img.shields.io/static/v1?label=Paypal&message=Donate&color=informational)](https://www.paypal.com/donate?hosted_button_id=7M7UFMMRTS7UE)
 
-Implements rules documented by [Microsoft](https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions) + file name length truncation to 255 bytes, which is common on [many modern](https://en.wikipedia.org/wiki/Comparison_of_file_systems) file systems. Runs on any .NET platform.
+Implements rules documented by [Microsoft](https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions) + file name length truncation to 255 bytes, which is common on [many modern](https://en.wikipedia.org/wiki/Comparison_of_file_systems) file systems + some unicode edge cases. Runs on any .NET platform.
 
 ## Example
 
@@ -37,7 +37,7 @@ Restrictions of Windows, Linux and macOS are all combined to an replacement patt
 | Max length                    | Linux, Windows, macOS           |                         | 255 chars          |
 | Unpaired Unicode surrogates   | macOS, Linux                    | Windows                 | U+D800 - U+DFFF    |
 | NotAssigned to Unicode        | macOS                           | Linux, Windows          | U+67803, ...       |
-| "New" Unicode (today 17+) | macOS                           | Linux, Windows          | 🫩 (U+1FAE9), ...  |
+| "New" Unicode (today 17+) | macOS                           | Linux, Windows          | 🫩 [🫈](https://emojipedia.org/hairy-creature), ...  |
 
 ## .NET framework support
 
