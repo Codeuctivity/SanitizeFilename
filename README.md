@@ -41,6 +41,7 @@ Restrictions of Windows, Linux and macOS are all combined to an replacement patt
 
 ## .NET framework support
 
+- Use [Codeuctivity.SanitizeFilename](https://www.nuget.org/packages/Codeuctivity.SanitizeFilename/) NuGet package version 2.x.x to get the latest version of the library with .NET framework support.
 - Support for legacy .NET versions will be maintained as long as it is [funded](https://github.com/sponsors/Codeuctivity).
 - Support for .NET Framework 4.6.2 and higher was added in Version [2.0.145](https://www.nuget.org/packages/Codeuctivity.SanitizeFilename/2.0.145).
 - Edge case Unicode sanitization: [.NET Framework](https://learn.microsoft.com/en-us/dotnet/framework/whats-new/#character-categories) uses Unicode 8.0, while .NET 8+ uses a newer version to detect unpaired surrogates and unassigned code points.
@@ -61,3 +62,4 @@ New-VHD -Path $vhdpath -Dynamic -SizeBytes $vhdsize | Mount-VHD -Passthru |Initi
 ```
 
 Running as admin will automatically create and mount a exFat drive while tests are running.
+.

@@ -1,6 +1,6 @@
 name: .NET build and test
 env:
-  CURRENT_VERSION: 2.0.${{ github.run_number }}
+  CURRENT_VERSION: 3.0.${{ github.run_number }}
   LAST_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
 
 on:
@@ -10,32 +10,14 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: |
-            8.0.x
-            9.0.x
             10.0.x
-      - name: Print OS name
-        shell: bash
-        run: |
-          echo "$RUNNER_OS"
-      - name: Show filesystem on windows
-        if: runner.os == 'Windows'
-        run: Get-Volume
-      - name: Show filesystem on ubuntu
-        if: runner.os == 'Linux'
-        run: df -h
-      - name: Show filesystem on macos
-        if: runner.os == 'MacOs'
-        run: df -h
       - name: Check formatting
         run: dotnet format --verify-no-changes
       - name: Restore dependencies
@@ -44,24 +26,22 @@ jobs:
         run: dotnet build --configuration Release --no-restore
       - name: Test
         run: dotnet test --no-build --verbosity normal --configuration Release
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: SanitizeFilename/bin/Release/
+          retention-days: 1
 
   deployRelease:
     if: startsWith(github.ref, 'refs/heads/release')
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v7
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+      - uses: actions/download-artifact@v4
         with:
-          dotnet-version: |
-            8.0.x
-            9.0.x
-            10.0.x
-      - name: Restore dependencies
-        run: dotnet restore
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
+          name: release-artifacts
+          path: SanitizeFilename/bin/Release/
       - name: NugetPush
         env:
           NUGET_TOKEN_EXISTS: ${{ secrets.NUGET_TOKEN }}
@@ -81,18 +61,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - uses: actions/checkout@v7
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+      - uses: actions/download-artifact@v4
         with:
-          dotnet-version: |
-            8.0.x
-            9.0.x
-            10.0.x
-      - name: Restore dependencies
-        run: dotnet restore
-      - name: Build
-        run: dotnet build --configuration Release --no-restore
+          name: release-artifacts
+          path: SanitizeFilename/bin/Release/
       - name: NugetPush
         env:
           NUGET_TOKEN_EXISTS: ${{ secrets.NUGET_TEST_TOKEN }}
