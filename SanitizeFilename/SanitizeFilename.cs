@@ -101,13 +101,14 @@ namespace Codeuctivity
         /// </summary>
         /// <param name="filename"></param>
         /// <param name="replacement"></param>
+        /// <param name="preserveFileNameExtension"></param>
         /// <returns></returns>
-        public static string Sanitize(string filename, char replacement = DefaultReplacementChar)
+        public static string Sanitize(string filename, char replacement = DefaultReplacementChar, bool preserveFileNameExtension = true)
         {
             ReplacementSanityCheck(replacement);
 
             string saneFilename = InternalSanitize(filename, replacement);
-            return UnicodeSafeStringTruncate(saneFilename);
+            return UnicodeSafeStringTruncate(saneFilename, preserveFileNameExtension);
         }
 
         /// <summary>
@@ -115,14 +116,15 @@ namespace Codeuctivity
         /// </summary>
         /// <param name="filename"></param>
         /// <param name="replacement"></param>
+        /// <param name="preserveFileNameExtension"></param>
         /// <returns></returns>
-        public static string Sanitize(string filename, string replacement)
+        public static string Sanitize(string filename, string replacement, bool preserveFileNameExtension = true)
         {
             if (char.TryParse(replacement, out var replacementChar))
                 ReplacementSanityCheck(replacementChar);
 
             string saneFilename = InternalSanitize(filename, replacement);
-            return UnicodeSafeStringTruncate(saneFilename);
+            return UnicodeSafeStringTruncate(saneFilename, preserveFileNameExtension);
         }
 
         private static void ReplacementSanityCheck(char replacement)
@@ -161,19 +163,11 @@ namespace Codeuctivity
 
             foreach (var invalidChar in usedInvalidChars)
             {
-#if NETSTANDARD2_0
-                filename = filename.Replace(invalidChar.ToString(), replacement);
-#else
                 filename = filename.Replace(invalidChar.ToString(), replacement, StringComparison.Ordinal);
-#endif
             }
             foreach (var invalidCodePoint in invalidCodePoints ?? [])
             {
-#if NETSTANDARD2_0
-                filename = filename.Replace(char.ConvertFromUtf32(invalidCodePoint), replacement);
-#else
                 filename = filename.Replace(char.ConvertFromUtf32(invalidCodePoint), replacement, StringComparison.Ordinal);
-#endif
             }
 
             filename = RemoveUnpairedSurrogates(filename, replacement);
@@ -251,14 +245,7 @@ namespace Codeuctivity
         {
             foreach (var reservedFileName in ReservedWindowsFileNames)
             {
-#if NETSTANDARD2_0
-                filename = filename.Replace(reservedFileName, replacement);
-#pragma warning disable CA1308 // Input is predefined and safe to use with ToLoverInvariant
-                filename = filename.Replace(reservedFileName.ToLowerInvariant(), replacement);
-#pragma warning restore CA1308
-#else
                 filename = filename.Replace(reservedFileName, replacement, true, CultureInfo.InvariantCulture);
-#endif
             }
 
             return filename;
@@ -268,11 +255,7 @@ namespace Codeuctivity
         {
             foreach (var reservedFileNamePrefix in ReservedWindowsFileNamesWithExtension)
                 if (filename.StartsWith(reservedFileNamePrefix, true, CultureInfo.InvariantCulture))
-#if NETSTANDARD2_0
-                    filename = replacement + filename.Substring(0, reservedFileNamePrefix.Length);
-#else
                     filename = string.Concat(replacement, filename.AsSpan(0, reservedFileNamePrefix.Length));
-#endif
             return filename;
         }
 
@@ -281,16 +264,12 @@ namespace Codeuctivity
             foreach (var InvalidTrailingChar in InvalidTrailingChars)
                 if (filename.EndsWith(InvalidTrailingChar, true, CultureInfo.InvariantCulture))
                 {
-#if NETSTANDARD2_0
-                    return filename.Remove(filename.Length - 1, 1);
-#else
                     return filename[..^1] + replacement;
-#endif
                 }
             return filename;
         }
 
-        private static string UnicodeSafeStringTruncate(string longFileName)
+        private static string UnicodeSafeStringTruncate(string longFileName, bool preserveFileNameExtension)
         {
             // Most filenames are shorter than 255 bytes, so we can avoid the expensive string enumeration in most cases
             if (FileNameLengthIsExt4Compatible(longFileName))
@@ -298,19 +277,32 @@ namespace Codeuctivity
                 return longFileName;
             }
 
+            // If we should preserve the extension, extract it and handle truncation accordingly
+            var extension = string.Empty;
+            var fileNameWithoutExtension = longFileName;
+
+            if (preserveFileNameExtension)
+            {
+                extension = Path.GetExtension(longFileName);
+                fileNameWithoutExtension = Path.GetFileNameWithoutExtension(longFileName);
+            }
+
             var builder = new StringBuilder();
             var builderForward = new StringBuilder();
 
-            var textElementEnumerator = StringInfo.GetTextElementEnumerator(longFileName);
+            var textElementEnumerator = StringInfo.GetTextElementEnumerator(fileNameWithoutExtension);
 
             while (textElementEnumerator.MoveNext())
             {
                 builderForward.Append(textElementEnumerator.Current);
 
+                // When preserving extension, account for its byte size in the length check
+                var combinedString = builderForward.ToString() + extension;
+
                 // Rule working for EXT4 and most other file systems
-                if (!FileNameLengthIsExt4Compatible(builderForward.ToString()))
+                if (!FileNameLengthIsExt4Compatible(combinedString))
                 {
-                    return builder.ToString();
+                    return builder.ToString() + extension;
                 }
 
                 builder.Append(textElementEnumerator.Current);
