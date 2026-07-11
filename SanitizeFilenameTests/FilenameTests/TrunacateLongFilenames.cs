@@ -79,7 +79,7 @@ namespace SanitizeFilenameTests.FilenameTests
             var veryLongExtension = "." + new string('a', 300);
             var filename = "file" + veryLongExtension;
 
-            var ex = Assert.Throws<ArgumentException>(() => 
+            var ex = Assert.Throws<ArgumentException>(() =>
                 filename.SanitizeFilename(filenameExtensionHandling: FilenameExtensionHandling.ThrowWhenFilenameExtensionIsTooLong));
 
             Assert.That(ex.Message, Does.Contain("extension is too long"));
