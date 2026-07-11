@@ -10,11 +10,11 @@
         /// </summary>
         /// <param name="filename"></param>
         /// <param name="replacement"></param>
-        /// <param name="preserveFileNameExtension"></param>
+        /// <param name="filenameExtensionHandling"></param>
         /// <returns></returns>
-        public static string SanitizeFilename(this string filename, char replacement = '_', bool preserveFileNameExtension = true)
+        public static string SanitizeFilename(this string filename, char replacement = '_', FilenameExtensionHandling filenameExtensionHandling = FilenameExtensionHandling.PreserveFilenameExtension)
         {
-            var sanitizedFilename = Codeuctivity.SanitizeFilename.Sanitize(filename, replacement, preserveFileNameExtension);
+            var sanitizedFilename = Codeuctivity.SanitizeFilename.Sanitize(filename, replacement, filenameExtensionHandling);
 
             return sanitizedFilename;
         }
@@ -24,11 +24,11 @@
         /// </summary>
         /// <param name="filename"></param>
         /// <param name="replacement"></param>
-        /// <param name="preserveFileNameExtension"></param>
+        /// <param name="filenameExtensionHandling"></param>
         /// <returns></returns>
-        public static string SanitizeFilename(this string filename, string replacement, bool preserveFileNameExtension = true)
+        public static string SanitizeFilename(this string filename, string replacement, FilenameExtensionHandling filenameExtensionHandling = FilenameExtensionHandling.PreserveFilenameExtension)
         {
-            var sanitizedFilename = Codeuctivity.SanitizeFilename.Sanitize(filename, replacement, preserveFileNameExtension);
+            var sanitizedFilename = Codeuctivity.SanitizeFilename.Sanitize(filename, replacement, filenameExtensionHandling);
 
             return sanitizedFilename;
         }

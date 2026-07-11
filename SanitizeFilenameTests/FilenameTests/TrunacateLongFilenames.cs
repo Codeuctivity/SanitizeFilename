@@ -19,13 +19,13 @@ namespace SanitizeFilenameTests.FilenameTests
         }
 
         [Test]
-        [TestCase(true, "a.txt")]
-        [TestCase(false, "aaaaaa")]
-        public void ShouldTruncateFileExtensionSpecificBehaviour(bool preserveFileNameExtension, string exectedSanitizedFilenameEnd)
+        [TestCase(FilenameExtensionHandling.PreserveFilenameExtension, "a.txt")]
+        [TestCase(FilenameExtensionHandling.PreserveFilenameWithoutExtension, "aaaaaa")]
+        public void ShouldTruncateFileExtensionSpecificBehaviour(FilenameExtensionHandling handling, string exectedSanitizedFilenameEnd)
         {
             var filename = new string('a', 300);
             filename += ".txt";
-            var sanitizedFilename = filename.SanitizeFilename(preserveFileNameExtension: preserveFileNameExtension);
+            var sanitizedFilename = filename.SanitizeFilename(filenameExtensionHandling: handling);
 
             Assert.That(sanitizedFilename, Does.EndWith(exectedSanitizedFilenameEnd));
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
@@ -33,14 +33,14 @@ namespace SanitizeFilenameTests.FilenameTests
         }
 
         [Test]
-        [TestCase(true, ".aaaaaa")]
-        [TestCase(false, "file")]
-        public void ShouldPreserveExtensionEvenWhenExceedingMaxLength(bool preserveFileNameExtension, string exectedSanitizedFilenameStart)
+        [TestCase(FilenameExtensionHandling.PreserveFilenameExtension, ".aaaaaa")]
+        [TestCase(FilenameExtensionHandling.PreserveFilenameWithoutExtension, "file")]
+        public void ShouldPreserveExtensionEvenWhenExceedingMaxLength(FilenameExtensionHandling handling, string exectedSanitizedFilenameStart)
         {
             // Create a filename where even the extension alone exceeds the max length when combined with minimal filename
             var veryLongExtension = "." + new string('a', 300); // 251 bytes for extension alone
             var filename = "file" + veryLongExtension;
-            var sanitizedFilename = filename.SanitizeFilename(preserveFileNameExtension: preserveFileNameExtension);
+            var sanitizedFilename = filename.SanitizeFilename(filenameExtensionHandling: handling);
 
             // Should preserve the extension despite length constraints
             Assert.That(sanitizedFilename, Does.StartWith(exectedSanitizedFilenameStart));
@@ -54,7 +54,7 @@ namespace SanitizeFilenameTests.FilenameTests
         [TestCase("file.json")]
         public void ShouldPreserveExtensionForShortFileNames(string filename)
         {
-            var sanitizedFilename = filename.SanitizeFilename(preserveFileNameExtension: true);
+            var sanitizedFilename = filename.SanitizeFilename(filenameExtensionHandling: FilenameExtensionHandling.PreserveFilenameExtension);
 
             var extension = Path.GetExtension(filename);
             Assert.That(sanitizedFilename, Does.EndWith(extension));
@@ -66,10 +66,23 @@ namespace SanitizeFilenameTests.FilenameTests
         public void ShouldHandleFileWithoutExtension()
         {
             var filename = new string('a', 300); // No extension
-            var sanitizedFilename = filename.SanitizeFilename(preserveFileNameExtension: true);
+            var sanitizedFilename = filename.SanitizeFilename(filenameExtensionHandling: FilenameExtensionHandling.PreserveFilenameExtension);
 
             Assert.That(System.Text.Encoding.UTF8.GetByteCount(sanitizedFilename), Is.LessThanOrEqualTo(255));
             Assert.That(FileWriteAsserter.TryWriteFileToTempDirectory(sanitizedFilename), Is.True);
+        }
+
+        [Test]
+        public void ShouldThrowWhenFilenameExtensionIsTooLong()
+        {
+            // Create a filename where the extension is very long
+            var veryLongExtension = "." + new string('a', 300);
+            var filename = "file" + veryLongExtension;
+
+            var ex = Assert.Throws<ArgumentException>(() => 
+                filename.SanitizeFilename(filenameExtensionHandling: FilenameExtensionHandling.ThrowWhenFilenameExtensionIsTooLong));
+
+            Assert.That(ex.Message, Does.Contain("extension is too long"));
         }
     }
 }

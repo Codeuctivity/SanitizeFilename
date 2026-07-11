@@ -101,14 +101,14 @@ namespace Codeuctivity
         /// </summary>
         /// <param name="filename"></param>
         /// <param name="replacement"></param>
-        /// <param name="preserveFileNameExtension"></param>
+        /// <param name="filenameExtensionHandling"></param>
         /// <returns></returns>
-        public static string Sanitize(string filename, char replacement = DefaultReplacementChar, bool preserveFileNameExtension = true)
+        public static string Sanitize(string filename, char replacement = DefaultReplacementChar, FilenameExtensionHandling filenameExtensionHandling = FilenameExtensionHandling.PreserveFilenameExtension)
         {
             ReplacementSanityCheck(replacement);
 
             string saneFilename = InternalSanitize(filename, replacement);
-            return UnicodeSafeStringTruncate(saneFilename, preserveFileNameExtension);
+            return UnicodeSafeStringTruncate(saneFilename, filenameExtensionHandling);
         }
 
         /// <summary>
@@ -116,15 +116,15 @@ namespace Codeuctivity
         /// </summary>
         /// <param name="filename"></param>
         /// <param name="replacement"></param>
-        /// <param name="preserveFileNameExtension"></param>
+        /// <param name="filenameExtensionHandling"></param>
         /// <returns></returns>
-        public static string Sanitize(string filename, string replacement, bool preserveFileNameExtension = true)
+        public static string Sanitize(string filename, string replacement, FilenameExtensionHandling filenameExtensionHandling = FilenameExtensionHandling.PreserveFilenameExtension)
         {
             if (char.TryParse(replacement, out var replacementChar))
                 ReplacementSanityCheck(replacementChar);
 
             string saneFilename = InternalSanitize(filename, replacement);
-            return UnicodeSafeStringTruncate(saneFilename, preserveFileNameExtension);
+            return UnicodeSafeStringTruncate(saneFilename, filenameExtensionHandling);
         }
 
         private static void ReplacementSanityCheck(char replacement)
@@ -269,7 +269,7 @@ namespace Codeuctivity
             return filename;
         }
 
-        private static string UnicodeSafeStringTruncate(string longFileName, bool preserveFileNameExtension)
+        private static string UnicodeSafeStringTruncate(string longFileName, FilenameExtensionHandling filenameExtensionHandling)
         {
             // Most filenames are shorter than 255 bytes, so we can avoid the expensive string enumeration in most cases
             if (FileNameLengthIsExt4Compatible(longFileName))
@@ -281,7 +281,7 @@ namespace Codeuctivity
             var extension = string.Empty;
             var fileNameWithoutExtension = longFileName;
 
-            if (preserveFileNameExtension)
+            if (filenameExtensionHandling != FilenameExtensionHandling.PreserveFilenameWithoutExtension)
             {
                 extension = Path.GetExtension(longFileName);
                 fileNameWithoutExtension = Path.GetFileNameWithoutExtension(longFileName);
@@ -302,7 +302,35 @@ namespace Codeuctivity
                 // Rule working for EXT4 and most other file systems
                 if (!FileNameLengthIsExt4Compatible(combinedString))
                 {
-                    return builder.ToString() + extension;
+                    var truncatedFileName = builder.ToString() + extension;
+
+                    // If even the extension alone exceeds the limit, we need to handle it based on the setting
+                    if (!FileNameLengthIsExt4Compatible(truncatedFileName))
+                    {
+                        if (filenameExtensionHandling == FilenameExtensionHandling.ThrowWhenFilenameExtensionIsTooLong)
+                        {
+                            throw new ArgumentException($"The filename extension is too long to fit within the 255-byte filesystem limit.", nameof(longFileName));
+                        }
+
+                        // Truncate the extension to fit within the 255-byte limit
+                        var extensionBuilder = new StringBuilder();
+                        var extensionEnumerator = StringInfo.GetTextElementEnumerator(extension);
+
+                        while (extensionEnumerator.MoveNext())
+                        {
+                            var testExtension = extensionBuilder.ToString() + extensionEnumerator.Current;
+                            var testFullName = builder.ToString() + testExtension;
+
+                            if (!FileNameLengthIsExt4Compatible(testFullName))
+                            {
+                                return builder.ToString() + extensionBuilder.ToString();
+                            }
+
+                            extensionBuilder.Append(extensionEnumerator.Current);
+                        }
+                    }
+
+                    return truncatedFileName;
                 }
 
                 builder.Append(textElementEnumerator.Current);
