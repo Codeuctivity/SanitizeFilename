@@ -23,6 +23,8 @@ Console.WriteLine($"SafeFileNameOptionalReplacementChar: {safeFileNameOptionalRe
 //SafeFileNameOptionalReplacementChar: file Name
 ```
 
+Try it yourself: [dotnetfiddle.net/bFWqX0](https://dotnetfiddle.net/bFWqX0)
+
 ## Rules
 
 Restrictions of Windows, Linux and macOS are all combined to an replacement pattern, that will sanitize any filename to be compatible with any of the OS and common filesystem restrictions.
