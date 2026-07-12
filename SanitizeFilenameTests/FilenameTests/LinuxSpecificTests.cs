@@ -18,11 +18,6 @@ namespace SanitizeFilenameTests
         [Test]
         public void ShouldBehaviorOsDependentOnWritingFilenameWithMoreThan255Bytes()
         {
-            if (IsRunningOnNet4x())
-            {
-                Assert.Pass("Test is not thought to be run with .net framework / unicode 8");
-            }
-
             var expected = !RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
             var fileNameTooLongForLinux = new string('a', 248) + "👩🏽‍🚒";
             var actual = FileWriteAsserter.TryWriteFileToTempDirectory(fileNameTooLongForLinux);

@@ -20,11 +20,6 @@ namespace DirectoryNameTests
         [Test]
         public void ShouldBehaviorOsDependentOnCreatingDirectoryWithMoreThan255Bytes()
         {
-            if (IsRunningOnNet4x())
-            {
-                Assert.Pass("Test is not thought to be run with .net framework / unicode 8");
-            }
-
             var expected = !RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
             var directoryNameTooLongForLinux = new string('a', 248) + "👩🏽‍🚒";
             var actual = DirectoryWriteAsserter.TryCreateDirectoryToTempDirectory(directoryNameTooLongForLinux);

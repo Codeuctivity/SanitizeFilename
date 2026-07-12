@@ -51,11 +51,6 @@ namespace DirectoryNameTests
         {
             var ex = Assert.Throws<ArgumentException>(() => invalidDirectoryName.SanitizeFilename(replacement));
 
-            if (IsRunningOnNet4x())
-            {
-                Assert.Pass("Test is not thought to be run with .net framework / unicode 8");
-            }
-
             Assert.That(ex.Message, Is.EqualTo("Replacement '*' is invalid for Windows (Parameter 'replacement')"));
         }
 
@@ -169,11 +164,6 @@ namespace DirectoryNameTests
         [TestCase("👩🏽‍🚒", 241, "a", 241)]
         public void ShouldTruncateLongFileNamesPreserveUnicodeTextElements(string testSuffix, int countOfFillingAChars, string expectedEnd, int expectedSanitizedLength)
         {
-            if (IsRunningOnNet4x())
-            {
-                Assert.Pass("Test is not thought to be run with .net framework / unicode 8");
-            }
-
             var invalidDirectoryName = new string('a', countOfFillingAChars) + testSuffix;
             var sanitizedDirectoryName = invalidDirectoryName.SanitizeFilename();
             Assert.That(sanitizedDirectoryName, Does.EndWith(expectedEnd));

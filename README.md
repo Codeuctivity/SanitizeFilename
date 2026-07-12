@@ -4,7 +4,7 @@ Sanitizes file and directory names to ensure compatibility with Windows (NTFS & 
 
 [![.NET build and test](https://github.com/Codeuctivity/SanitizeFilename/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Codeuctivity/SanitizeFilename/actions/workflows/dotnet.yml) [![NuGet](https://img.shields.io/nuget/v/Codeuctivity.SanitizeFilename.svg)](https://www.nuget.org/packages/Codeuctivity.SanitizeFilename/) [![Donate](https://img.shields.io/static/v1?label=Paypal&message=Donate&color=informational)](https://www.paypal.com/donate?hosted_button_id=7M7UFMMRTS7UE)
 
-Implements rules documented by [Microsoft](https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions) + file name length truncation to 255 bytes, which is common on [many modern](https://en.wikipedia.org/wiki/Comparison_of_file_systems) file systems. Runs on any .NET platform.
+Implements rules documented by [Microsoft](https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file#naming-conventions) + file name length truncation to 255 bytes, which is common on [many modern](https://en.wikipedia.org/wiki/Comparison_of_file_systems) file systems + some unicode edge cases. Runs on any .NET platform.
 
 ## Example
 
@@ -23,6 +23,8 @@ Console.WriteLine($"SafeFileNameOptionalReplacementChar: {safeFileNameOptionalRe
 //SafeFileNameOptionalReplacementChar: file Name
 ```
 
+Try it yourself: [dotnetfiddle.net/bFWqX0](https://dotnetfiddle.net/bFWqX0)
+
 ## Rules
 
 Restrictions of Windows, Linux and macOS are all combined to an replacement pattern, that will sanitize any filename to be compatible with any of the OS and common filesystem restrictions.
@@ -37,10 +39,11 @@ Restrictions of Windows, Linux and macOS are all combined to an replacement patt
 | Max length                    | Linux, Windows, macOS           |                         | 255 chars          |
 | Unpaired Unicode surrogates   | macOS, Linux                    | Windows                 | U+D800 - U+DFFF    |
 | NotAssigned to Unicode        | macOS                           | Linux, Windows          | U+67803, ...       |
-| "New" Unicode (today 17+) | macOS                           | Linux, Windows          | 🫩 (U+1FAE9), ...  |
+| "New" Unicode (today 17+) | macOS                           | Linux, Windows          | [🫈](https://emojipedia.org/hairy-creature), ...  |
 
 ## .NET framework support
 
+- Use [Codeuctivity.SanitizeFilename](https://www.nuget.org/packages/Codeuctivity.SanitizeFilename/) NuGet package version 2.x.x to get the latest version of the library with .NET framework support.
 - Support for legacy .NET versions will be maintained as long as it is [funded](https://github.com/sponsors/Codeuctivity).
 - Support for .NET Framework 4.6.2 and higher was added in Version [2.0.145](https://www.nuget.org/packages/Codeuctivity.SanitizeFilename/2.0.145).
 - Edge case Unicode sanitization: [.NET Framework](https://learn.microsoft.com/en-us/dotnet/framework/whats-new/#character-categories) uses Unicode 8.0, while .NET 8+ uses a newer version to detect unpaired surrogates and unassigned code points.
@@ -61,3 +64,4 @@ New-VHD -Path $vhdpath -Dynamic -SizeBytes $vhdsize | Mount-VHD -Passthru |Initi
 ```
 
 Running as admin will automatically create and mount a exFat drive while tests are running.
+.

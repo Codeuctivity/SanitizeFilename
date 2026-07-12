@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".github/dependabot.yml" />
+    <File Path=".github/workflows/dotnet.yml" />
+    <File Path="README.md" />
+    <File Path="testenvironments.json" />
+  </Folder>
+  <Project Path="SanitizeDemo/SanitizeDemo.csproj" />
+  <Project Path="SanitizeFilename/SanitizeFilename.csproj" />
+  <Project Path="SanitizeFilenameTests/SanitizeFilenameTests.csproj" />
+</Solution>
