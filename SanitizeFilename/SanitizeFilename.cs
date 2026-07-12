@@ -281,7 +281,7 @@ namespace Codeuctivity
             var extension = string.Empty;
             var fileNameWithoutExtension = longFileName;
 
-            if (filenameExtensionHandling != FilenameExtensionHandling.PreserveFilenameWithoutExtension)
+            if (filenameExtensionHandling != FilenameExtensionHandling.DoNotPreserveFilenameExtension)
             {
                 extension = Path.GetExtension(longFileName);
                 fileNameWithoutExtension = Path.GetFileNameWithoutExtension(longFileName);

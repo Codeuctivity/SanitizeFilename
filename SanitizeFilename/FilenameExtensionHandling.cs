@@ -14,7 +14,7 @@ namespace Codeuctivity
         /// <summary>
         /// Do not preserve the file extension. Truncate the entire filename including the extension.
         /// </summary>
-        PreserveFilenameWithoutExtension = 1,
+        DoNotPreserveFilenameExtension = 1,
 
         /// <summary>
         /// Throw an exception if the filename extension is too long to fit within the 255-byte limit.
