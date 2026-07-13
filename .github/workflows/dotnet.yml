@@ -27,13 +27,13 @@ jobs:
       - name: Test on Ubuntu (no build)
         run: dotnet test --no-build --verbosity normal --configuration Release
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-artifacts
           path: SanitizeFilename/bin/Release/
           retention-days: 1
       - name: Upload test artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-artifacts
           path: SanitizeFilenameTests/bin/Release/
