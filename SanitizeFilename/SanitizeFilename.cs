@@ -245,7 +245,8 @@ namespace Codeuctivity
         {
             foreach (var reservedFileName in ReservedWindowsFileNames)
             {
-                filename = filename.Replace(reservedFileName, replacement, true, CultureInfo.InvariantCulture);
+                if (string.Equals(filename, reservedFileName, StringComparison.OrdinalIgnoreCase))
+                    return replacement;
             }
 
             return filename;
@@ -255,7 +256,7 @@ namespace Codeuctivity
         {
             foreach (var reservedFileNamePrefix in ReservedWindowsFileNamesWithExtension)
                 if (filename.StartsWith(reservedFileNamePrefix, true, CultureInfo.InvariantCulture))
-                    filename = string.Concat(replacement, filename.AsSpan(0, reservedFileNamePrefix.Length));
+                    filename = string.Concat(replacement, filename.AsSpan(reservedFileNamePrefix.Length - 1));
             return filename;
         }
 
