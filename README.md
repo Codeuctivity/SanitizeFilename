@@ -23,7 +23,7 @@ Console.WriteLine($"SafeFileNameOptionalReplacementChar: {safeFileNameOptionalRe
 //SafeFileNameOptionalReplacementChar: file Name
 ```
 
-Try it yourself: [dotnetfiddle.net/bFWqX0](https://dotnetfiddle.net/bFWqX0)
+Try it yourself: [dotnetfiddle](https://dotnetfiddle.net/gJ2VOQ)
 
 ## Rules
 
