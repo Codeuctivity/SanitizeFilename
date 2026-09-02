@@ -22,9 +22,14 @@ namespace SanitizeFilenameTests
         private static readonly string[] InvalidWindowsFileNames = ["invalid<filename", "invalid>filename", "invalid\"filename", "invalid/filename", "invalid\\filename", "invalid|filename", "invalid?filename", "invalid*filename",];
         private static readonly string[] ReservedWindowsFileNames = ["con", "CON", "PRN", "AUX", "NUL", "COM0", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "COM\u00B9", "COM\u00B2", "COM\u00B3", "LPT0", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9", "LPT\u00B9", "LPT\u00B2", "LPT\u00B3", "endingWithSpace ", "endingWithPeriod."];
 
-        private static readonly string[] ReservedWindowsFileNamePrefixUsed = ["con.txt", "CON.txt", "PRN.txt", "AUX.txt", "NUL.txt", "COM0.txt", "COM1.txt", "COM2.txt", "COM3.txt", "COM4.txt", "COM5.txt", "COM6.txt", "COM7.txt", "COM8.txt", "COM9.txt", "COM\u00B9.txt", "COM\u00B2.txt", "COM\u00B3.txt", "LPT0.txt", "LPT1.txt", "LPT2.txt", "LPT3.txt", "LPT4.txt", "LPT5.txt", "LPT6.txt", "LPT7.txt", "LPT8.txt", "LPT9.txt", "LPT\u00B9.txt", "LPT\u00B2.txt", "LPT\u00B3.txt"];
+        private static readonly string[] ReservedWindowsFileNamePrefixUsed = ["con.txt", "CON.txt", "PRN.txt", "AUX.txt", "NUL.txt", "COM0.txt", "COM1.txt", "COM2.txt", "COM3.txt", "COM4.txt", "COM5.txt", "COM6.txt", "COM7.txt", "COM8.txt", "COM9.txt", "COM\u00B9.txt", "COM\u00B2.txt", "COM\u00B3.txt", "LPT0.txt", "LPT1.txt", "LPT2.txt", "LPT3.txt", "LPT4.txt", "LPT5.txt", "LPT6.txt", "LPT7.txt", "LPT8.txt", "LPT9.txt", "LPT\u00B9.txt", "LPT\u00B2.txt", "LPT\u00B3.txt", "NUL.tar.gz", "nul.tar.gz", "CON.tar.gz"];
 
         private static readonly string[] ValidFileNames = ["validFileName"];
+
+        // Regression coverage for https://github.com/Codeuctivity/SanitizeFilename/issues/46 :
+        // reserved device names must only be sanitized when they are the whole base file name,
+        // not merely a substring anywhere within an otherwise legal name.
+        private static readonly string[] ValidFileNamesContainingReservedNamesAsSubstring = ["ICON", "ICON.txt", "FALCON", "RECON.doc", "beacon", "silicon Valley", "CONSOLE.txt", "CONSTRUCTION", "NULLABLE.cs", "AUXILIARY.doc", "COMPANY.docx", "DISCOMFORT", "ENCOMPASS", "LPTOP.txt", "COM10", "LPT10"];
 
         [Test]
         [TestCaseSource(nameof(ValidFileNames))]
@@ -33,6 +38,24 @@ namespace SanitizeFilenameTests
             var sanitizedFilename = validFilename.SanitizeFilename();
 
             Assert.That(sanitizedFilename, Is.EqualTo(validFilename));
+        }
+
+        [Test]
+        [TestCaseSource(nameof(ValidFileNamesContainingReservedNamesAsSubstring))]
+        public void ShouldNotTouchFileNamesContainingReservedNamesAsSubstring(string validFilename)
+        {
+            var sanitizedFilename = validFilename.SanitizeFilename();
+
+            Assert.That(sanitizedFilename, Is.EqualTo(validFilename));
+        }
+
+        [Test]
+        [TestCase("CONfile*Name", "CONfile_Name")]
+        public void ShouldOnlyReplaceTheInvalidCharNotTheReservedNameSubstring(string invalidFilename, string expectedOutcome)
+        {
+            var sanitizedFilename = invalidFilename.SanitizeFilename();
+
+            Assert.That(sanitizedFilename, Is.EqualTo(expectedOutcome));
         }
 
         [Test]

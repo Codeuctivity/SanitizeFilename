@@ -251,14 +251,8 @@ namespace Codeuctivity
         {
             foreach (var reservedFileName in ReservedWindowsFileNames)
             {
-#if NETSTANDARD2_0
-                filename = filename.Replace(reservedFileName, replacement);
-#pragma warning disable CA1308 // Input is predefined and safe to use with ToLoverInvariant
-                filename = filename.Replace(reservedFileName.ToLowerInvariant(), replacement);
-#pragma warning restore CA1308
-#else
-                filename = filename.Replace(reservedFileName, replacement, true, CultureInfo.InvariantCulture);
-#endif
+                if (string.Equals(filename, reservedFileName, StringComparison.OrdinalIgnoreCase))
+                    return replacement;
             }
 
             return filename;
@@ -269,9 +263,9 @@ namespace Codeuctivity
             foreach (var reservedFileNamePrefix in ReservedWindowsFileNamesWithExtension)
                 if (filename.StartsWith(reservedFileNamePrefix, true, CultureInfo.InvariantCulture))
 #if NETSTANDARD2_0
-                    filename = replacement + filename.Substring(0, reservedFileNamePrefix.Length);
+                    filename = replacement + filename.Substring(reservedFileNamePrefix.Length - 1);
 #else
-                    filename = string.Concat(replacement, filename.AsSpan(0, reservedFileNamePrefix.Length));
+                    filename = string.Concat(replacement, filename.AsSpan(reservedFileNamePrefix.Length - 1));
 #endif
             return filename;
         }
